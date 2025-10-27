@@ -1,5 +1,58 @@
 let lastCheckTime = null;
 let fullHistory = [];
+let config = {};
+
+async function loadConfig() {
+    try {
+        const response = await fetch('config.json?t=' + Date.now());
+        if (response.ok) {
+            config = await response.json();
+        } else {
+            console.error('Failed to load config, using defaults');
+            config = {
+                "title": "Service Status",
+                "description": "Real-time status monitoring for our services",
+                "githubRepo": "lhmchyd/HonMaku-Status",
+                "githubBranch": "main",
+                "updateInterval": 30000,
+                "checkInterval": 30000,
+                "services": [
+                    {
+                        "name": "AniList",
+                        "url": "https://anilist.co"
+                    },
+                    {
+                        "name": "Giscus",
+                        "url": "https://giscus.app"
+                    }
+                ],
+                "dateFormat": "12hour"
+            };
+        }
+    } catch (error) {
+        console.error('Error loading config:', error);
+        // Use defaults if config file is not found
+        config = {
+            "title": "Service Status",
+            "description": "Real-time status monitoring for our services",
+            "githubRepo": "lhmchyd/HonMaku-Status",
+            "githubBranch": "main",
+            "updateInterval": 30000,
+            "checkInterval": 30000,
+            "services": [
+                {
+                    "name": "AniList",
+                    "url": "https://anilist.co"
+                },
+                {
+                    "name": "Giscus",
+                    "url": "https://giscus.app"
+                }
+            ],
+            "dateFormat": "12hour"
+        };
+    }
+}
 
 function formatDateTime(date) {
     const d = new Date(date);
@@ -134,12 +187,14 @@ function generateUptimeBars(url, isCurrentlyUp) {
 
 async function loadStatus() {
     try {
-        const response = await fetch('status-results.json?t=' + Date.now());
+        const statusUrl = `https://raw.githubusercontent.com/${config.githubRepo}/refs/heads/${config.githubBranch}/status-results.json?t=` + Date.now();
+        const response = await fetch(statusUrl);
         const data = await response.json();
         
         // Load history
         try {
-            const historyResponse = await fetch('status-history.json?t=' + Date.now());
+            const historyUrl = `https://raw.githubusercontent.com/${config.githubRepo}/refs/heads/${config.githubBranch}/status-history.json?t=` + Date.now();
+            const historyResponse = await fetch(historyUrl);
             fullHistory = await historyResponse.json();
         } catch (error) {
             console.log('No history file found');
@@ -365,7 +420,8 @@ async function loadStatus() {
 // Function to periodically check for updates without full UI refresh
 async function checkForUpdates() {
     try {
-        const response = await fetch('status-results.json?t=' + Date.now());
+        const statusUrl = `https://raw.githubusercontent.com/${config.githubRepo}/refs/heads/${config.githubBranch}/status-results.json?t=` + Date.now();
+        const response = await fetch(statusUrl);
         if (response.ok) {
             const data = await response.json();
             const currentUpdateTime = document.getElementById('last-updated').textContent;
@@ -426,7 +482,12 @@ async function checkForUpdates() {
     }
 }
 
-// Check for updates every 30 seconds
-setInterval(checkForUpdates, 30000);
+// Initialize the status page after loading config
+async function initializeApp() {
+    await loadConfig();
+    // Check for updates based on config
+    setInterval(checkForUpdates, config.checkInterval);
+    loadStatus();
+}
 
-loadStatus();
+initializeApp();

@@ -84,7 +84,23 @@ function getDateString(date) {
 async function runStatusCheck() {
   console.log('Starting website status check...');
   
-  const websitesToMonitor = [
+  // Load configuration to get websites to monitor
+  let config;
+  try {
+    const configData = await fs.readFile('config.json', 'utf-8');
+    config = JSON.parse(configData);
+  } catch (error) {
+    console.log('No config.json found, using default websites');
+    // Use default websites if config is not found
+    config = {
+      services: [
+        { name: "AniList", url: "https://anilist.co" },
+        { name: "Giscus", url: "https://giscus.app" }
+      ]
+    };
+  }
+  
+  const websitesToMonitor = config.services ? config.services.map(service => service.url) : [
     'https://anilist.co',
     'https://giscus.app'
   ];
