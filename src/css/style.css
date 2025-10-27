@@ -1,5 +1,5 @@
 :root {
-    --container-5xl: 45rem;
+    --container-5xl: 44rem;
 }
 
 * {
@@ -9,7 +9,9 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", system-ui,
+        sans-serif;
     background: #000;
     color: #fff;
     line-height: 1.5;
@@ -19,18 +21,18 @@ body {
 .container {
     max-width: var(--container-5xl);
     margin: 0 auto;
-    padding: 80px 24px 40px;
 }
 
 header {
-    margin-bottom: 50px;
+    padding: 16px 0 16px 0;
+    margin-bottom: 0;
 }
 
 .header-top {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 8px;
 }
 
 .home-link {
@@ -69,15 +71,15 @@ h1 {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 16px;
+    padding: 8px 12px;
     width: 100%;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 500;
     background: rgba(16, 185, 129, 0.1);
     color: #10b981;
     transition: all 0.3s ease;
-    margin-top: 8px;
+    margin: 0 0 12px 0;
 }
 
 .status-badge.degraded {
@@ -107,14 +109,19 @@ h1 {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .metadata {
     display: flex;
     gap: 24px;
-    margin-top: 16px;
+    margin: 0 0 20px 0;
     font-size: 13px;
     color: #666;
 }
@@ -122,7 +129,7 @@ h1 {
 .metadata-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .metadata-label {
@@ -139,11 +146,11 @@ h1 {
 }
 
 .services {
-    margin-bottom: 60px;
+    margin: 20px 0 40px 0;
 }
 
 .service-item {
-    padding: 32px 0;
+    padding: 20px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.2s ease;
 }
@@ -160,13 +167,14 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
 }
 
 .service-name {
     font-size: 16px;
     font-weight: 500;
     color: #fff;
+    font-weight: 400;
 }
 
 .service-name.error {
@@ -177,14 +185,19 @@ h1 {
     font-size: 13px;
     color: #10b981;
     font-weight: 500;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 
 .service-status-text.down {
     color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
 }
 
 .service-status-text.degraded {
     color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
 }
 
 .uptime-container {
@@ -194,8 +207,8 @@ h1 {
 .uptime-bar {
     display: flex;
     gap: 1px;
-    height: 30px;
-    margin-bottom: 8px;
+    height: 12px;
+    margin-bottom: 12px;
 }
 
 .uptime-day {
@@ -205,7 +218,6 @@ h1 {
     transition: all 0.2s ease;
     position: relative;
     cursor: pointer;
-    margin: 0 1px; /* Add small gaps between bars */
 }
 
 .uptime-day.up {
@@ -253,7 +265,7 @@ h1 {
 }
 
 .uptime-tooltip::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 100%;
     left: 50%;
@@ -291,34 +303,34 @@ h1 {
     justify-content: space-between;
     font-size: 11px;
     color: #666;
+    margin-top: 6px;
 }
 
 .response-time {
-    font-size: 13px;
+    font-size: 12px;
     color: #666;
     font-variant-numeric: tabular-nums;
-    margin-top: 4px;
 }
 
 .history-section {
-    margin-top: 80px;
-    padding-top: 40px;
+    margin-top: 48px;
+    padding: 32px 0;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .history-section h2 {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 24px;
-    letter-spacing: -0.01em;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    letter-spacing: 0;
 }
 
 .history-item {
-    padding: 24px;
+    padding: 16px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    margin-bottom: 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
 }
 
 .history-item:last-child {
@@ -329,11 +341,11 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .history-title {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 500;
 }
 
@@ -354,18 +366,18 @@ h1 {
 .history-details {
     font-size: 13px;
     color: #888;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 .history-service {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 2px 6px;
     background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
     border-radius: 4px;
-    font-size: 12px;
-    margin-right: 6px;
-    margin-top: 6px;
+    font-size: 11px;
+    margin-right: 4px;
+    margin-top: 4px;
 }
 
 .history-service.up {
@@ -390,20 +402,22 @@ h1 {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 footer {
     text-align: center;
-    padding: 40px 0;
+    padding: 32px 0 40px 0;
     color: #666;
-    font-size: 13px;
-    margin-top: 40px;
+    font-size: 12px;
+    margin-top: 24px;
 }
 
 @media (max-width: 768px) {
-    .container {
-        padding: 40px 20px;
+    header {
+        padding: 40px 0 0 0;
     }
 
     .home-link {
@@ -415,7 +429,7 @@ footer {
         width: 18px;
         height: 18px;
     }
-    
+
     h1 {
         font-size: 36px;
     }
@@ -432,18 +446,13 @@ footer {
     }
 
     .uptime-bar {
-        height: 24px;
+        height: 12px;
     }
 
     .uptime-labels {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-    }
-
-    .response-time {
-        order: -1;
-        margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
     }
 
     .status-badge {

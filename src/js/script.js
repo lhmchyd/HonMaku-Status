@@ -255,7 +255,6 @@ async function loadStatus() {
                     </div>
                     <div class="uptime-labels">
                         <span>60 days ago</span>
-                        <span class="response-time">${result.responseTime}ms</span>
                         <span>Today</span>
                     </div>
                 </div>
