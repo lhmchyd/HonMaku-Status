@@ -187,14 +187,12 @@ function generateUptimeBars(url, isCurrentlyUp) {
 
 async function loadStatus() {
     try {
-        const statusUrl = `https://raw.githubusercontent.com/${config.githubRepo}/refs/heads/${config.githubBranch}/status-results.json?t=` + Date.now();
-        const response = await fetch(statusUrl);
+        const response = await fetch('status-results.json?t=' + Date.now());
         const data = await response.json();
         
         // Load history
         try {
-            const historyUrl = `https://raw.githubusercontent.com/${config.githubRepo}/refs/heads/${config.githubBranch}/status-history.json?t=` + Date.now();
-            const historyResponse = await fetch(historyUrl);
+            const historyResponse = await fetch('status-history.json?t=' + Date.now());
             fullHistory = await historyResponse.json();
         } catch (error) {
             console.log('No history file found');
@@ -420,8 +418,7 @@ async function loadStatus() {
 // Function to periodically check for updates without full UI refresh
 async function checkForUpdates() {
     try {
-        const statusUrl = `https://raw.githubusercontent.com/${config.githubRepo}/refs/heads/${config.githubBranch}/status-results.json?t=` + Date.now();
-        const response = await fetch(statusUrl);
+        const response = await fetch('status-results.json?t=' + Date.now());
         if (response.ok) {
             const data = await response.json();
             const currentUpdateTime = document.getElementById('last-updated').textContent;
