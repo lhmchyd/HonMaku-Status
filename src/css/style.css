@@ -206,13 +206,13 @@ h1 {
 
 .uptime-bar {
     display: flex;
-    gap: 1px;
+    gap: 0.5px;
     height: 12px;
     margin-bottom: 12px;
 }
 
 .uptime-day {
-    flex: 1;
+    flex: 1 1 0px;
     background: #1a1a1a;
     border-radius: 1px;
     transition: all 0.2s ease;
@@ -416,8 +416,13 @@ footer {
 }
 
 @media (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+    
     header {
-        padding: 40px 0 0 0;
+        padding: 16px 0;
+        margin-bottom: 16px;
     }
 
     .home-link {
@@ -457,5 +462,18 @@ footer {
 
     .status-badge {
         max-width: 100%;
+    }
+    
+    .services {
+        margin: 16px 0 32px 0;
+    }
+    
+    .history-section {
+        padding: 24px 0;
+        margin-top: 24px;
+    }
+    
+    footer {
+        padding: 24px 0;
     }
 }
