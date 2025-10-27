@@ -83,9 +83,9 @@ function formatDateLong(date) {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const month = months[d.getMonth()];
-    const day = String(d.getDate()).padStart(2, '0');
+    const day = d.getDate(); // Don't pad with zero
     const year = d.getFullYear();
-    return `${day} ${month} ${year}`;
+    return `${month} ${day}, ${year}`;
 }
 
 function generateUptimeBars(url, isCurrentlyUp) {
@@ -285,117 +285,66 @@ async function loadStatus() {
         historyContainer.innerHTML = '';
         
         if (fullHistory.length > 0) {
-            // Since we're now using daily aggregated data, we need to present incidents differently
-            // Group consecutive days with same status for cleaner presentation
-            const groupedIncidents = [];
-            let currentGroup = null;
+            // Show past incidents in date order
+            const incidentsByDate = {};
             
-            fullHistory.forEach((check, index) => {
+            // Group incidents by date
+            fullHistory.forEach(check => {
+                const checkDate = new Date(check.lastChecked);
+                const dateKey = checkDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const formattedDate = formatDateLong(checkDate); // e.g., "26 Oct 2025"
+                
                 const hasDown = check.results.some(r => r.status === null || r.status >= 400);
-                const downServices = check.results.filter(r => r.status === null || r.status >= 400);
-                const statusType = hasDown ? 'down' : 'up';
                 
-                if (!currentGroup || currentGroup.statusType !== statusType) {
-                    if (currentGroup) groupedIncidents.push(currentGroup);
-                    currentGroup = {
-                        statusType,
-                        services: check.results,
-                        serviceDetails: downServices,
-                        startDate: new Date(check.lastChecked),
-                        endDate: new Date(check.lastChecked),
-                        daysCount: 1,
-                        checks: [check]
-                    };
-                } else {
-                    currentGroup.endDate = new Date(check.lastChecked);
-                    currentGroup.daysCount++;
-                    currentGroup.checks.push(check);
+                if (hasDown) {
+                    if (!incidentsByDate[dateKey]) {
+                        incidentsByDate[dateKey] = {
+                            date: formattedDate,
+                            incidents: []
+                        };
+                    }
+                    
+                    const downServices = check.results.filter(r => r.status === null || r.status >= 400);
+                    downServices.forEach(service => {
+                        incidentsByDate[dateKey].incidents.push({
+                            service: service.url.replace('https://', '').replace('http://', '').split('/')[0],
+                            error: service.error || service.statusText
+                        });
+                    });
                 }
             });
             
-            if (currentGroup) groupedIncidents.push(currentGroup);
+            // Convert to array and sort by date (most recent first)
+            const sortedIncidents = Object.keys(incidentsByDate)
+                .map(dateKey => incidentsByDate[dateKey])
+                .sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date, most recent first
             
-            groupedIncidents.slice(0, 10).forEach(group => {
-                const log = document.createElement('div');
-                log.className = 'history-item';
-                
-                const startDate = formatDateLong(group.startDate);
-                const endDate = group.daysCount > 1 ? ` - ${formatDateLong(group.endDate)}` : '';
-                const dateRange = `${startDate}${endDate}`;
-                
-                if (group.statusType === 'down') {
-                    const servicesList = group.serviceDetails.map(s => {
-                        const hostname = s.url.replace('https://', '').replace('http://', '').split('/')[0];
-                        const serviceName = hostname.split('.')[0];
-                        return `<span class="history-service">${serviceName}</span>`;
-                    }).join('');
-                    
-                    log.innerHTML = `
-                        <div class="history-header">
-                            <div class="history-title error">Service Disruption</div>
-                            <div class="history-time">${dateRange}</div>
+            if (sortedIncidents.length > 0) {
+                // Display each incident date
+                sortedIncidents.forEach(incident => {
+                    const incidentDate = document.createElement('div');
+                    incidentDate.className = 'incident-date';
+                    incidentDate.innerHTML = `
+                        <div class="incident-date-header">
+                            <h3>${incident.date}</h3>
                         </div>
-                        <div class="history-details">
-                            ${servicesList}
-                            <div style="margin-top: 12px;">
-                                ${group.serviceDetails.length} service${group.serviceDetails.length === 1 ? '' : 's'} affected across ${group.daysCount} day${group.daysCount > 1 ? 's' : ''}.
-                                ${group.serviceDetails.map(s => {
-                                    const hostname = s.url.replace('https://', '').replace('http://', '').split('/')[0];
-                                    return `${hostname}: ${s.error || s.statusText}`;
-                                }).join(', ')}
-                            </div>
+                        <div class="incident-list">
+                            ${incident.incidents.map(inc => `
+                                <div class="incident-item">
+                                    <div class="incident-service">${inc.service}</div>
+                                    <div class="incident-details">${inc.error}</div>
+                                </div>
+                            `).join('')}
                         </div>
                     `;
-                } else {
-                    const servicesList = group.services.map(s => {
-                        const hostname = s.url.replace('https://', '').replace('http://', '').split('/')[0];
-                        const serviceName = hostname.split('.')[0];
-                        return `<span class="history-service up">${serviceName}</span>`;
-                    }).join('');
-                    
-                    log.innerHTML = `
-                        <div class="history-header">
-                            <div class="history-title success">All Systems Operational</div>
-                            <div class="history-time">${dateRange}</div>
-                        </div>
-                        <div class="history-details">
-                            ${servicesList}
-                            <div style="margin-top: 12px;">
-                                All services operational for ${group.daysCount} day${group.daysCount > 1 ? 's' : ''}.
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                historyContainer.appendChild(log);
-            });
-            
-            if (fullHistory.length > 0) {
-                const noMoreLog = document.createElement('div');
-                noMoreLog.className = 'history-item';
-                noMoreLog.innerHTML = `
-                    <div class="history-header">
-                        <div class="history-title">Status History</div>
-                        <div class="history-time">${fullHistory.length} days of data</div>
-                    </div>
-                    <div class="history-details">
-                        Showing daily aggregated status for the last ${fullHistory.length} days.
-                    </div>
-                `;
-                historyContainer.appendChild(noMoreLog);
+                    historyContainer.appendChild(incidentDate);
+                });
+            } else {
+                // No incidents reported
+                historyContainer.innerHTML = '<div class="no-incidents">No incidents reported.</div>';
             }
         } else {
-            historyContainer.innerHTML = `
-                <div class="history-item">
-                    <div class="history-header">
-                        <div class="history-title">No History Available</div>
-                        <div class="history-time">Waiting for data</div>
-                    </div>
-                    <div class="history-details">
-                        Status history will appear here after GitHub Actions runs.
-                    </div>
-                </div>
-            `;
+            historyContainer.innerHTML = '<div class="no-incidents">No incidents reported.</div>';
         }
 
     } catch (error) {
