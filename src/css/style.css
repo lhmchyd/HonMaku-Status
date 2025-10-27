@@ -206,13 +206,14 @@ h1 {
 
 .uptime-bar {
     display: flex;
-    gap: 0.5px;
     height: 12px;
     margin-bottom: 12px;
 }
 
 .uptime-day {
-    flex: 1 1 0px;
+    flex: 0 0 auto;
+    width: 2px;
+    margin: 0 0.5px;
     background: #1a1a1a;
     border-radius: 1px;
     transition: all 0.2s ease;
@@ -422,7 +423,6 @@ footer {
     
     header {
         padding: 16px 0;
-        margin-bottom: 16px;
     }
 
     .home-link {
@@ -452,6 +452,13 @@ footer {
 
     .uptime-bar {
         height: 12px;
+        overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    .uptime-bar::-webkit-scrollbar {
+        display: none;
     }
 
     .uptime-labels {
