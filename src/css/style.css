@@ -210,7 +210,6 @@ h1 {
 
 .uptime-day {
     flex: 1;
-    max-width: 4px;
     background: #1a1a1a;
     border-radius: 1px;
     transition: all 0.2s ease;
@@ -411,6 +410,28 @@ footer {
     color: #666;
     font-size: 12px;
     margin-top: 24px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+    
+    header {
+        padding: 16px 0;
+    }
+    
+    .services {
+        padding: 0 20px;
+    }
+    
+    .history-section {
+        padding: 0 20px;
+    }
+    
+    footer {
+        padding: 0 20px;
+    }
 }
 
 
