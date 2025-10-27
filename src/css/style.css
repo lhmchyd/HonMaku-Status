@@ -146,7 +146,6 @@ h1 {
 
 .services {
     margin: 20px 0 40px 0;
-    padding: 0 20px;
 }
 
 .service-item {
@@ -206,7 +205,7 @@ h1 {
 
 .uptime-bar {
     display: flex;
-    gap: 1px;
+    gap: 2px;
     height: 32px;
     margin-bottom: 16px;
 }
