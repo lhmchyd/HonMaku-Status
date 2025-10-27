@@ -356,4 +356,71 @@ async function loadStatus() {
     }
 }
 
+// Function to periodically check for updates without full UI refresh
+async function checkForUpdates() {
+    try {
+        const response = await fetch('status-results.json?t=' + Date.now());
+        if (response.ok) {
+            const data = await response.json();
+            const currentUpdateTime = document.getElementById('last-updated').textContent;
+            const newUpdateTime = formatDateTime(data.lastChecked);
+            
+            // If we have newer data, update just the timestamp and other relevant info
+            if (newUpdateTime !== currentUpdateTime) {
+                document.getElementById('last-updated').textContent = newUpdateTime;
+                
+                // Update the overall status badge without recreating the whole UI
+                const allUp = data.results.every(r => r.status && r.status < 400);
+                const hasDown = data.results.some(r => r.status === null || r.status >= 400);
+                const hasDegraded = data.results.some(r => r.status && r.status >= 400 && r.status < 500);
+                
+                const badge = document.getElementById('overall-badge');
+                const downServices = data.results.filter(r => r.status === null || r.status >= 400);
+                
+                if (allUp) {
+                    badge.className = 'status-badge';
+                    badge.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>All Systems Operational</span>
+                    `;
+                    document.title = 'Status - All Systems Operational';
+                } else if (hasDown) {
+                    const serviceNames = downServices.map(s => {
+                        const hostname = s.url.replace('https://', '').replace('http://', '').split('/')[0];
+                        return hostname.split('.')[0];
+                    }).join(', ');
+                    
+                    badge.className = 'status-badge down';
+                    badge.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        <span>${serviceNames} ${downServices.length === 1 ? 'is' : 'are'} down</span>
+                    `;
+                    document.title = `Status - ${serviceNames} down`;
+                } else if (hasDegraded) {
+                    badge.className = 'status-badge degraded';
+                    badge.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>Degraded Performance</span>
+                    `;
+                    document.title = 'Status - Degraded Performance';
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error checking for updates:', error);
+    }
+}
+
+// Check for updates every 30 seconds
+setInterval(checkForUpdates, 30000);
+
 loadStatus();
