@@ -19,8 +19,9 @@ body {
 }
 
 .container {
-    max-width: var(--container-5xl);
+    max-width: calc(var(--container-5xl) - 40px);
     margin: 0 auto;
+    padding: 0 20px;
 }
 
 header {
@@ -145,6 +146,7 @@ h1 {
 
 .services {
     margin: 20px 0 40px 0;
+    padding: 0 20px;
 }
 
 .service-item {
@@ -204,6 +206,7 @@ h1 {
 
 .uptime-bar {
     display: flex;
+    gap: 1px;
     height: 32px;
     margin-bottom: 16px;
 }
@@ -310,8 +313,8 @@ h1 {
 }
 
 .history-section {
-    margin-top: 48px;
-    padding: 32px 0;
+    margin: 48px 0 0 0;
+    padding: 32px 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -406,32 +409,12 @@ h1 {
 
 footer {
     text-align: center;
-    padding: 32px 0 40px 0;
+    padding: 32px 20px 40px 20px;
     color: #666;
     font-size: 12px;
-    margin-top: 24px;
+    margin: 24px 0 0 0;
 }
 
-@media (max-width: 768px) {
-    .container {
-        padding: 0 20px;
-    }
-    
-    header {
-        padding: 16px 0;
-    }
-    
-    .services {
-        padding: 0 20px;
-    }
-    
-    .history-section {
-        padding: 0 20px;
-    }
-    
-    footer {
-        padding: 0 20px;
-    }
-}
+
 
 
