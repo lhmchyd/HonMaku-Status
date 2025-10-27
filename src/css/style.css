@@ -141,9 +141,7 @@ h1 {
     font-variant-numeric: tabular-nums;
 }
 
-.refresh-timer {
-    color: #10b981;
-}
+
 
 .services {
     margin: 20px 0 40px 0;
@@ -206,14 +204,13 @@ h1 {
 
 .uptime-bar {
     display: flex;
-    height: 12px;
+    height: 28px;
     margin-bottom: 12px;
 }
 
 .uptime-day {
-    flex: 0 0 auto;
-    width: 2px;
-    margin: 0 0.5px;
+    flex: 1;
+    max-width: 4px;
     background: #1a1a1a;
     border-radius: 1px;
     transition: all 0.2s ease;
@@ -440,9 +437,10 @@ footer {
     }
 
     .service-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
     }
 
     .metadata {
@@ -451,7 +449,7 @@ footer {
     }
 
     .uptime-bar {
-        height: 12px;
+        height: 28px;
         overflow-x: auto;
         -ms-overflow-style: none;
         scrollbar-width: none;

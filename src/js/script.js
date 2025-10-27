@@ -1,5 +1,3 @@
-let nextRefresh = 60;
-let timerInterval;
 let lastCheckTime = null;
 let fullHistory = [];
 
@@ -124,49 +122,9 @@ function generateUptimeBars(url, isCurrentlyUp) {
     return bars;
 }
 
-function startRefreshTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-    
-    // Check for updates more frequently (every 30 seconds) to make it feel more real-time
-    // but still respect the GitHub Actions schedule (5 minutes) for full refreshes
-    nextRefresh = 30;
-    
-    timerInterval = setInterval(() => {
-        nextRefresh--;
-        const minutes = Math.floor(nextRefresh / 60);
-        const seconds = nextRefresh % 60;
-        document.getElementById('refresh-timer').textContent = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-        
-        if (nextRefresh <= 0) {
-            // Check if new data is available without a full reload
-            checkForNewData();
-            // Reset to check again in 30 seconds
-            nextRefresh = 30;
-        }
-    }, 1000);
-}
 
-async function checkForNewData() {
-    try {
-        // Add a cache-busting parameter to get fresh data
-        const response = await fetch('status-results.json?t=' + Date.now());
-        if (response.ok) {
-            const data = await response.json();
-            // If we have more recent data, update the display
-            if (!lastCheckTime || new Date(data.lastChecked).getTime() > lastCheckTime) {
-                // Update the last updated time immediately
-                document.getElementById('last-updated').textContent = formatDateTime(data.lastChecked);
-                
-                // Schedule a full reload to update all information
-                setTimeout(() => {
-                    loadStatus();
-                }, 2000); // Wait 2 seconds before full reload to show user that new data was detected
-            }
-        }
-    } catch (error) {
-        console.error('Error checking for new data:', error);
-    }
-}
+
+
 
 async function loadStatus() {
     try {
@@ -381,9 +339,6 @@ async function loadStatus() {
             `;
         }
 
-        // Refresh every 30 seconds to check for updates
-        // Refresh automatically based on GitHub Actions schedule (every 5 minutes)
-        startRefreshTimer();
     } catch (error) {
         const container = document.getElementById('services-container');
         container.innerHTML = `
@@ -396,7 +351,6 @@ async function loadStatus() {
         `;
         console.error('Error loading status:', error);
         document.getElementById('last-updated').textContent = 'Error';
-        document.getElementById('refresh-timer').textContent = 'Retrying...';
         
         setTimeout(() => loadStatus(), 5000);
     }
