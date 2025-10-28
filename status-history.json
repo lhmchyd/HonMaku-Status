@@ -1,5 +1,10 @@
 [
   {
+    "timestamp": 1761669892627,
+    "date": "2025-10-28",
+    "checks": []
+  },
+  {
     "timestamp": 1761669179710,
     "date": "2025-10-28",
     "checks": [
@@ -2097,27 +2102,6 @@
         "responseTime": 137,
         "error": null,
         "timestamp": "2025-10-27T18:29:04.258Z"
-      }
-    ]
-  },
-  {
-    "lastChecked": "2025-10-27T18:10:06.448Z",
-    "results": [
-      {
-        "url": "https://anilist.co",
-        "status": 200,
-        "statusText": "OK",
-        "responseTime": 906,
-        "error": null,
-        "timestamp": "2025-10-27T18:10:06.343Z"
-      },
-      {
-        "url": "https://giscus.app",
-        "status": 200,
-        "statusText": "OK",
-        "responseTime": 103,
-        "error": null,
-        "timestamp": "2025-10-27T18:10:06.447Z"
       }
     ]
   }
