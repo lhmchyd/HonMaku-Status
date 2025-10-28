@@ -1,5 +1,27 @@
 [
   {
+    "timestamp": 1761667262901,
+    "date": "2025-10-28",
+    "checks": [
+      {
+        "name": "Main Website",
+        "url": "https://example.com",
+        "status": "up",
+        "statusCode": 200,
+        "responseTime": 158,
+        "error": null
+      },
+      {
+        "name": "API Server",
+        "url": "https://api.example.com",
+        "status": "down",
+        "statusCode": null,
+        "responseTime": 42,
+        "error": "getaddrinfo ENOTFOUND api.example.com"
+      }
+    ]
+  },
+  {
     "timestamp": 1761666885673,
     "date": "2025-10-28",
     "checks": [
@@ -2078,27 +2100,6 @@
         "responseTime": 254,
         "error": null,
         "timestamp": "2025-10-27T17:59:57.014Z"
-      }
-    ]
-  },
-  {
-    "lastChecked": "2025-10-27T17:56:14.539Z",
-    "results": [
-      {
-        "url": "https://anilist.co",
-        "status": 200,
-        "statusText": "OK",
-        "responseTime": 624,
-        "error": null,
-        "timestamp": "2025-10-27T17:56:14.438Z"
-      },
-      {
-        "url": "https://giscus.app",
-        "status": 200,
-        "statusText": "OK",
-        "responseTime": 101,
-        "error": null,
-        "timestamp": "2025-10-27T17:56:14.539Z"
       }
     ]
   }

@@ -1,5 +1,5 @@
 {
-  "timestamp": 1761666885673,
+  "timestamp": 1761667262901,
   "date": "2025-10-28",
   "checks": [
     {
@@ -7,7 +7,7 @@
       "url": "https://example.com",
       "status": "up",
       "statusCode": 200,
-      "responseTime": 75,
+      "responseTime": 158,
       "error": null
     },
     {
@@ -15,7 +15,7 @@
       "url": "https://api.example.com",
       "status": "down",
       "statusCode": null,
-      "responseTime": 19,
+      "responseTime": 42,
       "error": "getaddrinfo ENOTFOUND api.example.com"
     }
   ]
