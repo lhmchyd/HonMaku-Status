@@ -1,201 +1,214 @@
-const https = require("https");
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs').promises;
+const https = require('https');
+const http = require('http');
+const { URL } = require('url');
 
-// --- Load external config.json ---
-const CONFIG_PATH = path.join(__dirname, "../config.json");
-let CONFIG = null;
-
-try {
-  CONFIG = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
-  console.log("✓ Loaded config.json");
-} catch (err) {
-  console.error("✗ Failed to load config.json:", err.message);
-  process.exit(1);
-}
-
-// --- Settings from config.json ---
-const SITES = CONFIG.sites || [];
-const SETTINGS = CONFIG.settings || {
-  maxHistoryChecks: 100,
-  maxDailySnapshots: 60,
-  timezone: "UTC",
-};
-
-// --- File paths ---
-const RESULTS_FILE = path.join(__dirname, "../status-results.json");
-const HISTORY_FILE = path.join(__dirname, "../status-history.json");
-const DAILY_FILE = path.join(__dirname, "../status-day.json");
-
-// --- Check a single URL ---
-function checkUrl(site) {
+function checkWebsiteStatus(url, timeout = 10000) {
   return new Promise((resolve) => {
-    const protocol = site.url.startsWith("https") ? https : http;
     const startTime = Date.now();
-
-    const req = protocol.get(site.url, { timeout: site.timeout || 10000 }, (res) => {
-      const responseTime = Date.now() - startTime;
-
+    const urlObj = new URL(url);
+    
+    const isHttps = urlObj.protocol === 'https:';
+    const client = isHttps ? https : http;
+    
+    const options = {
+      hostname: urlObj.hostname,
+      port: urlObj.port || (isHttps ? 443 : 80),
+      path: urlObj.pathname + urlObj.search,
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Website Status Checker (GitHub Actions)'
+      }
+    };
+    
+    const request = client.request(options, (res) => {
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      
       resolve({
-        name: site.name,
-        url: site.url,
-        status: res.statusCode >= 200 && res.statusCode < 400 ? "up" : "down",
-        statusCode: res.statusCode,
+        url,
+        status: res.statusCode,
+        statusText: res.statusMessage || '',
         responseTime,
         error: null,
+        timestamp: new Date().toISOString()
       });
-
+      
+      // Consume response to free memory
       res.resume();
     });
-
-    req.on("timeout", () => {
-      req.destroy();
+    
+    request.on('error', (error) => {
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      
       resolve({
-        name: site.name,
-        url: site.url,
-        status: "down",
-        statusCode: null,
-        responseTime: Date.now() - startTime,
-        error: "Request timeout",
+        url,
+        status: null,
+        statusText: 'Error',
+        responseTime,
+        error: error.message,
+        timestamp: new Date().toISOString()
       });
     });
-
-    req.on("error", (err) => {
+    
+    const timeoutId = setTimeout(() => {
+      request.destroy();
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      
       resolve({
-        name: site.name,
-        url: site.url,
-        status: "down",
-        statusCode: null,
-        responseTime: Date.now() - startTime,
-        error: err.message,
+        url,
+        status: null,
+        statusText: 'Timeout',
+        responseTime,
+        error: 'Request timed out',
+        timestamp: new Date().toISOString()
       });
-    });
+    }, timeout);
+    
+    request.on('close', () => clearTimeout(timeoutId));
+    request.end();
   });
 }
 
-// --- Date Helpers ---
-function getDateString(timestamp = Date.now()) {
-  const date = new Date(timestamp);
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: SETTINGS.timezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  return formatter.format(date); // YYYY-MM-DD
+// Function to get date string in YYYY-MM-DD format (using UTC to avoid timezone issues)
+function getDateString(date) {
+  const d = new Date(date);
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
-// --- Safe file helpers ---
-function readJsonFile(filePath, defaultValue = []) {
+async function runStatusCheck() {
+  console.log('Starting website status check...');
+  
+  // Load configuration to get websites to monitor
+  let config;
   try {
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, "utf8");
-      return JSON.parse(content);
-    }
-  } catch (err) {
-    console.warn(`⚠️ Could not read ${filePath}:`, err.message);
+    const configData = await fs.readFile('config.json', 'utf-8');
+    config = JSON.parse(configData);
+  } catch (error) {
+    console.log('No config.json found, using default websites');
+    // Use default websites if config is not found
+    config = {
+      services: [
+        { name: "AniList", url: "https://anilist.co" },
+        { name: "Giscus", url: "https://giscus.app" }
+      ]
+    };
   }
-  return defaultValue;
-}
-
-function writeJsonFile(filePath, data) {
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
-    console.log(`✓ Written to ${path.basename(filePath)}`);
-    return true;
-  } catch (err) {
-    console.error(`✗ Failed to write ${filePath}:`, err.message);
-    return false;
+  
+  const websitesToMonitor = config.services ? config.services.map(service => service.url) : [
+    'https://anilist.co',
+    'https://giscus.app'
+  ];
+  
+  const results = [];
+  
+  for (const url of websitesToMonitor) {
+    console.log(`Checking ${url}...`);
+    const result = await checkWebsiteStatus(url);
+    results.push(result);
+    console.log(`${url}: Status ${result.status || 'ERROR'} (${result.responseTime}ms)`);
   }
-}
-
-// --- Daily Snapshot Processor ---
-function processDailySnapshots(history, existingDaily) {
-  const dailyMap = new Map(existingDaily.map((s) => [s.date, s]));
-  const today = getDateString();
-
-  const historyByDay = new Map();
-  history.forEach((check) => {
-    const d = getDateString(check.timestamp);
-    if (!historyByDay.has(d)) historyByDay.set(d, []);
-    historyByDay.get(d).push(check);
-  });
-
-  historyByDay.forEach((checks, date) => {
-    if (date === today) return;
-    if (!dailyMap.has(date)) {
-      const lastCheck = checks.reduce((a, b) => (b.timestamp > a.timestamp ? b : a));
-      dailyMap.set(date, {
-        date,
-        timestamp: lastCheck.timestamp,
-        checks: lastCheck.checks,
-        summary: calculateSummary(lastCheck.checks),
-      });
-      console.log(`✓ Added daily snapshot for ${date}`);
-    }
-  });
-
-  return Array.from(dailyMap.values())
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, SETTINGS.maxDailySnapshots);
-}
-
-// --- Summary Calculation ---
-function calculateSummary(checks) {
-  const total = checks.length;
-  const up = checks.filter((c) => c.status === "up").length;
-  const down = total - up;
-  const avgResponse =
-    checks.reduce((sum, c) => sum + (c.responseTime || 0), 0) / total || 0;
-  return {
-    total,
-    up,
-    down,
-    uptime: total > 0 ? ((up / total) * 100).toFixed(2) + "%" : "0%",
-    avgResponseTime: Math.round(avgResponse),
-  };
-}
-
-// --- Main Execution ---
-async function main() {
-  console.log("=== HonMaku Status Check ===");
-  console.log("Timezone:", SETTINGS.timezone);
-  console.log("Sites:", SITES.length);
-  console.log("---------------------------");
-
-  const checks = [];
-  for (const site of SITES) {
-    console.log(`Checking ${site.name} (${site.url})...`);
-    const result = await checkUrl(site);
-    checks.push(result);
-    console.log(`→ ${result.status.toUpperCase()} (${result.responseTime}ms)`);
-    if (result.error) console.log(`  Error: ${result.error}`);
-  }
-
+  
   const currentCheck = {
-    timestamp: Date.now(),
-    date: getDateString(),
-    checks,
+    lastChecked: new Date().toISOString(),
+    results
   };
-
-  writeJsonFile(RESULTS_FILE, currentCheck);
-
-  // Update history
-  const history = readJsonFile(HISTORY_FILE, []);
-  history.unshift(currentCheck);
-  writeJsonFile(HISTORY_FILE, history.slice(0, SETTINGS.maxHistoryChecks));
-
-  // Update daily
-  const daily = readJsonFile(DAILY_FILE, []);
-  const updatedDaily = processDailySnapshots(history, daily);
-  writeJsonFile(DAILY_FILE, updatedDaily);
-
-  console.log("---------------------------");
-  console.log("Status check completed successfully!");
+  
+  // Load existing detailed history
+  let detailedHistory = [];
+  try {
+    const historyData = await fs.readFile('status-history.json', 'utf-8');
+    detailedHistory = JSON.parse(historyData);
+  } catch (error) {
+    console.log('No existing detailed history found, creating new file');
+  }
+  
+  // Current date (when this check is running)
+  const today = getDateString(new Date());
+  
+  // Before adding the current check, look for completed days in the existing history
+  // A "completed day" is a calendar day that has no more entries coming in the current run
+  // In our newest-first array, if we find entries from an old day after entries from more recent days,
+  // that indicates those old-day entries are "completed" and ready for daily snapshot
+  
+  // First, let's find dates that might have their last entry ready to be moved
+  // Get all unique dates and find the last (chronologically) entry for each date
+  const dateEntriesMap = new Map(); // date string -> array of entries from that date
+  
+  for (const entry of detailedHistory) {
+    const dateStr = getDateString(new Date(entry.lastChecked));
+    if (!dateEntriesMap.has(dateStr)) {
+      dateEntriesMap.set(dateStr, []);
+    }
+    dateEntriesMap.get(dateStr).push(entry);
+  }
+  
+  // For each date, the chronologically last entry is the last one in the array
+  // (since detailedHistory is newest-first, the chronologically last entry from a date is the last occurrence in the array)
+  for (const [dateStr, entries] of dateEntriesMap) {
+    if (dateStr !== today) {
+      // Get the chronologically last entry for this date (the last occurrence in the newest-first array)
+      const lastEntryForDate = entries[entries.length - 1];
+      
+      // Add this as a daily snapshot if not already present
+      let dailyStatus = [];
+      try {
+        const dailyData = await fs.readFile('status-day.json', 'utf-8');
+        dailyStatus = JSON.parse(dailyData);
+      } catch (error) {
+        console.log('No existing daily status history found, creating new file');
+      }
+      
+      // Check if this date already exists in daily status to avoid duplicates
+      const existingIndex = dailyStatus.findIndex(item => 
+        getDateString(new Date(item.lastChecked)) === dateStr
+      );
+      
+      if (existingIndex === -1) {
+        // Add the chronologically last check from this date as the daily snapshot
+        dailyStatus.unshift({
+          lastChecked: lastEntryForDate.lastChecked,
+          results: lastEntryForDate.results
+        });
+        
+        // Keep only the last 60 days of daily data
+        dailyStatus = dailyStatus.slice(0, 60);
+        
+        // Save daily status history
+        await fs.writeFile('status-day.json', JSON.stringify(dailyStatus, null, 2));
+        console.log(`Daily snapshot added to status-day.json from ${dateStr}'s last check`);
+      }
+    }
+  }
+  
+  // Add current check to detailed history
+  detailedHistory.unshift(currentCheck);
+  
+  // Keep only last 100 detailed checks to manage file size
+  detailedHistory = detailedHistory.slice(0, 100);
+  
+  // Save detailed history (for recent checks at 5-minute intervals)
+  await fs.writeFile('status-history.json', JSON.stringify(detailedHistory, null, 2));
+  console.log(`Detailed history updated in status-history.json (${detailedHistory.length} entries)`);
+  
+  // Save current status (for the main page)
+  await fs.writeFile('status-results.json', JSON.stringify(currentCheck, null, 2));
+  console.log('Current status saved to status-results.json');
+  
+  return results;
 }
 
-main().catch((err) => {
-  console.error("Fatal error:", err);
-  process.exit(1);
-});
+runStatusCheck()
+  .then(() => {
+    console.log('Status check completed successfully');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('Error during status check:', error);
+    process.exit(0);
+  });
