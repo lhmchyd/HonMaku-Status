@@ -1,5 +1,5 @@
 {
-  "timestamp": 1761667262901,
+  "timestamp": 1761668693875,
   "date": "2025-10-28",
   "checks": [
     {
@@ -7,16 +7,24 @@
       "url": "https://example.com",
       "status": "up",
       "statusCode": 200,
-      "responseTime": 158,
+      "responseTime": 169,
       "error": null
     },
     {
       "name": "API Server",
-      "url": "https://api.example.com",
+      "url": "https://api.example.com/health",
       "status": "down",
       "statusCode": null,
-      "responseTime": 42,
+      "responseTime": 26,
       "error": "getaddrinfo ENOTFOUND api.example.com"
+    },
+    {
+      "name": "Blog",
+      "url": "https://blog.example.com",
+      "status": "down",
+      "statusCode": null,
+      "responseTime": 35,
+      "error": "getaddrinfo ENOTFOUND blog.example.com"
     }
   ]
 }
