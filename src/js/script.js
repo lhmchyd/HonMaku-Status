@@ -130,6 +130,10 @@ async function loadStatus() {
         const response = await fetch('status-results.json?t=' + Date.now());
         const data = await response.json();
 
+        // ✅ Normalize JSON format (handles both old/new structure)
+        data.lastChecked = data.lastChecked || new Date(data.timestamp).toISOString();
+        data.results = data.results || data.checks || [];
+
         try {
             const historyResponse = await fetch('status-history.json?t=' + Date.now());
             fullHistory = await historyResponse.json();
@@ -210,8 +214,11 @@ async function checkForUpdates() {
         const response = await fetch('status-results.json?t=' + Date.now());
         if (!response.ok) return;
         const data = await response.json();
-        const newUpdateTime = formatDateTime(data.lastChecked);
 
+        // Normalize again for periodic updates
+        data.lastChecked = data.lastChecked || new Date(data.timestamp).toISOString();
+
+        const newUpdateTime = formatDateTime(data.lastChecked);
         const currentText = document.getElementById('last-updated').textContent;
         if (newUpdateTime !== currentText && newUpdateTime !== 'Unknown') {
             document.getElementById('last-updated').textContent = newUpdateTime;
