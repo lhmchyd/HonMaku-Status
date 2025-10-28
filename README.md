@@ -1,83 +1,271 @@
-# Status Page
+# HonMaku-Status Improvements
 
-This is a status page for monitoring service uptime and availability with a hybrid approach: detailed recent checks and daily aggregated snapshots.
+## Problems Fixed
 
-## Project Structure
+### 1. **status-day.json Not Being Generated**
+- **Root Cause**: Missing logic to detect completed days and extract daily snapshots
+- **Solution**: Implemented proper day completion detection and snapshot extraction
 
+### 2. **Timezone Issues**
+- **Problem**: Date calculations not considering timezone
+- **Solution**: Using `Intl.DateTimeFormat` with configurable timezone
+
+### 3. **No Clear Daily Snapshot Logic**
+- **Problem**: Unclear when and how to create daily snapshots
+- **Solution**: Take the last check from each completed day (excluding today)
+
+### 4. **Poor Error Handling**
+- **Problem**: File read/write failures not handled properly
+- **Solution**: Added safe file operations with fallbacks
+
+## Key Improvements
+
+### ✅ Proper Daily Snapshot Generation
+```javascript
+// Only process completed days (not today)
+if (date === today) {
+  return; // Skip today as it's not complete
+}
+
+// Take the last check of the day
+const lastCheck = checks.reduce((latest, current) => 
+  current.timestamp > latest.timestamp ? current : latest
+);
 ```
-.
-├── index.html              # Main HTML file
-├── status-results.json     # Current status results
-├── status-history.json     # Detailed recent status checks (last 100 checks) - for recent status viewing
-├── status-day.json         # Daily status snapshots (last 60 days) - for long-term history and external API access
-├── README.md               # Documentation
-├── src/
-│   ├── css/
-│   │   └── style.css       # Stylesheet for the status page
-│   └── js/
-│       └── script.js       # JavaScript logic for the status page
-├── scripts/
-│   └── check-status.js     # Script to check service status and manage both detailed and daily snapshots
+
+### ✅ Timezone Support
+```javascript
+const formatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: CONFIG.timezone,  // e.g., 'Asia/Jakarta'
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit'
+});
+```
+
+### ✅ Summary Statistics
+Each daily snapshot includes:
+- Total checks
+- Up/down count
+- Uptime percentage
+- Average response time
+
+### ✅ Safe File Operations
+- Graceful handling of missing files
+- Proper error logging
+- Atomic writes
+
+## Implementation Steps
+
+### 1. Update check-status.js
+Replace your existing `scripts/check-status.js` with the improved version.
+
+### 2. Configure Your Sites
+Edit the `CONFIG` object in `check-status.js`:
+
+```javascript
+const CONFIG = {
+  urls: [
+    { name: 'My Website', url: 'https://yoursite.com', timeout: 10000 },
+    { name: 'My API', url: 'https://api.yoursite.com', timeout: 10000 }
+  ],
+  maxHistoryChecks: 100,      // Keep last 100 detailed checks
+  maxDailySnapshots: 60,      // Keep 60 days of snapshots
+  timezone: 'Asia/Jakarta'    // Your timezone
+};
+```
+
+### 3. Update GitHub Actions Workflow
+Replace `.github/workflows/status-check.yml` with the improved version.
+
+### 4. Initialize Empty Files (Optional)
+```bash
+# Create empty JSON files if they don't exist
+echo "[]" > status-history.json
+echo "[]" > status-day.json
+echo "{}" > status-results.json
+```
+
+### 5. Test Locally
+```bash
+# Run the check script
+node scripts/check-status.js
+
+# Verify files are created
+ls -l status-*.json
+
+# Check the content
+cat status-day.json
+```
+
+### 6. Commit and Push
+```bash
+git add .
+git commit -m "Improve status check with daily snapshots"
+git push
 ```
 
 ## How It Works
 
-The system maintains two types of history:
-- `status-history.json`: Detailed checks (every 5 minutes) limited to last 100 entries for recent status viewing
-- `status-day.json`: Daily snapshots (one per day) containing the last check from each day, kept for 60 days for long-term history
-
-When the script runs:
-1. It performs the current status check
-2. It examines the existing `status-history.json` for any "completed" days (days with no more upcoming entries)
-3. For each completed day, it takes the chronologically last check from that day and adds it to `status-day.json`
-4. It adds the current check to `status-history.json`
-
-This provides:
-- Recent detailed history via `status-history.json` (last 100 checks)
-- Long-term historical data via `status-day.json` (last 60 days with one snapshot per day)
-- Easy external API access via `status-day.json` for daily status information
-
-## Real-time Updates
-
-The status page automatically updates every 30 seconds to check for new data. The GitHub Action runs every 5 minutes by schedule, but you can trigger it manually or via external services:
-
-### Manual Trigger
-You can manually trigger a status check using GitHub's repository dispatch API:
-```bash
-curl -X POST \
-  -H "Accept: application/vnd.github.v3+json" \
-  -H "Authorization: Bearer YOUR_GITHUB_TOKEN" \
-  https://api.github.com/repos/lhmchyd/status-honmaku/dispatches \
-  -d '{"event_type":"status-check"}'
+### Flow Diagram
+```
+Every 5 minutes:
+1. Check all configured URLs
+2. Create current check result
+3. Add to status-history.json (keep last 100)
+4. Analyze history for completed days
+5. Extract last check from each completed day
+6. Update status-day.json (keep last 60 days)
+7. Commit and push changes
 ```
 
-### Automated Trigger with External Service
-You can use a service like cron-job.org to trigger checks more frequently:
-
-**Option 1: Direct API Call**
-- URL: `https://api.github.com/repos/lhmchyd/status-honmaku/dispatches`
-- Method: `POST`
-- Headers: 
-  - `Authorization: Bearer YOUR_GITHUB_TOKEN`
-  - `Content-Type: application/json`
-- Body: `{"event_type": "status-check"}`
-
-**Option 2: Serverless Function (for token security)**
-Deploy the API function to Vercel and trigger that instead:
-1. Deploy this project to Vercel
-2. Set up an environment variable `GITHUB_TOKEN` with your GitHub token
-3. Call your deployed endpoint: `https://your-project.vercel.app/api/trigger`
-
-### Command Line Trigger
-Run the included script:
-```bash
-GITHUB_TOKEN=your_token node scripts/trigger-github-action.js
+### Daily Snapshot Logic
+```
+Day 1: [Check1, Check2, Check3, ..., Check288] → Take Check288
+Day 2: [Check1, Check2, Check3, ..., Check288] → Take Check288
+...
+Today: [Check1, Check2, Check3, ...] → Skip (incomplete)
 ```
 
-## Local Development
+## Data Structure
 
-To run this locally, you need a web server due to CORS restrictions when loading JSON files. You can:
+### status-results.json (Current Status)
+```json
+{
+  "timestamp": 1730084400000,
+  "date": "2025-10-28",
+  "checks": [
+    {
+      "name": "Main Website",
+      "url": "https://example.com",
+      "status": "up",
+      "statusCode": 200,
+      "responseTime": 245,
+      "error": null
+    }
+  ]
+}
+```
 
-- Use Python's built-in server: `python -m http.server 8000`
-- Use Node's http-server: `npx http-server`
-- Use any other local web server
+### status-history.json (Recent Checks)
+```json
+[
+  {
+    "timestamp": 1730084400000,
+    "date": "2025-10-28",
+    "checks": [...]
+  },
+  // ... up to 100 most recent checks
+]
+```
+
+### status-day.json (Daily Snapshots)
+```json
+[
+  {
+    "date": "2025-10-27",
+    "timestamp": 1730073600000,
+    "checks": [...],
+    "summary": {
+      "total": 3,
+      "up": 3,
+      "down": 0,
+      "uptime": "100.00%",
+      "avgResponseTime": 234
+    }
+  },
+  // ... up to 60 days
+]
+```
+
+## Frontend Integration
+
+Your existing `script.js` can now use `status-day.json` for long-term trends:
+
+```javascript
+// Fetch daily snapshots
+fetch('status-day.json')
+  .then(res => res.json())
+  .then(daily => {
+    // Calculate 30-day uptime
+    const last30Days = daily.slice(0, 30);
+    const totalUptime = last30Days.reduce((sum, day) => {
+      return sum + parseFloat(day.summary.uptime);
+    }, 0) / last30Days.length;
+    
+    console.log(`30-day average uptime: ${totalUptime.toFixed(2)}%`);
+  });
+```
+
+## Advanced Configuration
+
+### Custom Timezone
+```javascript
+timezone: 'America/New_York'  // EST/EDT
+timezone: 'Europe/London'      // GMT/BST
+timezone: 'Asia/Tokyo'         // JST
+timezone: 'UTC'                // Universal
+```
+
+### Adjust Retention
+```javascript
+maxHistoryChecks: 288,    // 24 hours at 5-min intervals
+maxDailySnapshots: 90,    // 3 months of daily data
+```
+
+### Custom Timeout
+```javascript
+urls: [
+  { name: 'Fast API', url: '...', timeout: 5000 },   // 5 seconds
+  { name: 'Slow Service', url: '...', timeout: 30000 } // 30 seconds
+]
+```
+
+## Troubleshooting
+
+### status-day.json still empty?
+1. Check if enough time has passed (need at least 1 complete day)
+2. Verify timezone configuration is correct
+3. Check console logs in GitHub Actions
+
+### Wrong dates in snapshots?
+- Verify `timezone` setting matches your location
+- Check system time in GitHub Actions runner
+
+### Files not updating?
+- Check GitHub Actions logs for errors
+- Verify repository permissions (needs `contents: write`)
+- Ensure files are being committed properly
+
+## Monitoring
+
+Check GitHub Actions runs:
+1. Go to your repository
+2. Click "Actions" tab
+3. Select "Status Check" workflow
+4. Review recent runs
+
+## Benefits of This Approach
+
+✅ **Efficient Storage**: Only keeps detailed checks for recent period  
+✅ **Long-term History**: Daily snapshots for trends and analytics  
+✅ **API Ready**: `status-day.json` perfect for external consumption  
+✅ **Timezone Aware**: Correct date calculations anywhere in the world  
+✅ **Robust**: Proper error handling and safe file operations  
+✅ **Scalable**: Can easily add more sites without performance issues  
+
+## Next Steps
+
+1. **Add Notifications**: Integrate with Discord, Slack, or email
+2. **Add Metrics**: Track MTTR (Mean Time To Recovery)
+3. **Add Incidents**: Log and track outages
+4. **Add Alerts**: Set up thresholds for response time
+5. **Add Charts**: Visualize uptime trends on frontend
+
+## Questions?
+
+If you encounter issues, check:
+- GitHub Actions logs
+- Console output from `check-status.js`
+- File permissions
+- JSON file structure (valid JSON)
