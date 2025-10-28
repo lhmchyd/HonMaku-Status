@@ -5,11 +5,11 @@ A simple service status monitoring system with Unix timestamps, running locally 
 ## Features
 
 - ✅ **Configurable Services**: Define services in config.json
-- ✅ **Unix Timestamps**: Clean and efficient data storage
+- ✅ **Unix Timestamps**: Clean and efficient data storage (no date/timestamp conflicts)
 - ✅ **Local Execution**: Runs locally without complex setup
-- ✅ **Visual Uptime Bars**: 60-day history visualization
+- ✅ **Visual Uptime Bars**: 60-day history visualization with detailed tooltips
 - ✅ **Incident Tracking**: Detailed error logs when services fail
-- ✅ **Interactive Tooltips**: Hover for detailed status information
+- ✅ **Interactive Tooltips**: Hover for detailed status information with service names and error details
 
 ## Quick Start
 
@@ -54,7 +54,7 @@ npm start
 
 ## Data Files
 
-The system uses three JSON files:
+The system uses three JSON files with clean Unix timestamp-based structure:
 
 #### `status-results.json` - Current Status (5-minute intervals)
 ```json
@@ -77,7 +77,6 @@ The system uses three JSON files:
 ```json
 [
   {
-    "date": "2024-10-28",
     "timestamp": 1700000000,
     "status": "good"
   }
@@ -88,7 +87,6 @@ The system uses three JSON files:
 ```json
 [
   {
-    "date": "2024-10-28",
     "timestamp": 1700000000,
     "service": "https://example.com",
     "name": "My Website",
@@ -105,17 +103,18 @@ The system uses three JSON files:
 ```
 Every 5 minutes:
 1. Check all configured services from config.json
-2. Update status-results.json with current 5-minute status
-3. Update status-history.json with daily status (good/error)
-4. Add detailed incidents to status-incidents.json if services fail
-5. Frontend visualizes data with 60-day uptime bars
+2. Update status-results.json with current 5-minute status (Unix timestamp)
+3. Update status-history.json with daily status (Unix timestamp, good/error)
+4. Add detailed incidents to status-incidents.json if services fail (Unix timestamp)
+5. Frontend visualizes data with 60-day uptime bars and detailed tooltips
 ```
 
 ### Visualization
 - **Green bars**: Days with no errors ("No downtime recorded on this day.")
-- **Red bars**: Days with errors ("Downtime recorded on this day.") 
+- **Red bars**: Days with errors (shows service name and error message)
 - **Gray bars**: Days with no data ("No data exists for this day.")
-- **Tooltips**: Hover over bars for date and status details
+- **Tooltips**: Hover over bars for date and detailed status information
+- **Multiple Incidents**: Shows "+X more incidents" when multiple issues occurred on same day
 
 ## Running Locally
 
@@ -157,9 +156,10 @@ Add services to the `services` array in config.json:
 
 - **Real-time status updates** with Unix timestamp display
 - **60-day visual uptime timeline** with color-coded status
-- **Interactive tooltips** showing detailed status on hover
-- **Incident history** section with date-organized errors
+- **Interactive tooltips** showing detailed status on hover (service name + error details)
+- **Incident history** section with timestamp-organized errors
 - **Responsive dark theme** design
+- **Detailed downtime info** in tooltips without needing to scroll to history
 
 ## Deployment
 
@@ -177,10 +177,11 @@ Add services to the `services` array in config.json:
 
 ✅ **Simple Architecture**: Only 3 JSON files needed  
 ✅ **Configurable**: Services defined in config.json  
-✅ **Unix Timestamps**: Efficient data storage and processing  
-✅ **Visual History**: 60-day uptime timeline  
+✅ **Unix Timestamps**: Efficient data storage with no conflicts  
+✅ **Visual History**: 60-day uptime timeline with detailed information  
 ✅ **Local Operation**: Easy to run and maintain  
-✅ **Detailed Logging**: Incident tracking with error details
+✅ **Detailed Logging**: Incident tracking with error details  
+✅ **No Redundancy**: Clean data structure without duplicate date/timestamp fields
 
 ## Troubleshooting
 
