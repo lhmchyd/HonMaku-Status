@@ -146,16 +146,20 @@ async function runStatusCheck() {
     console.log('No existing history found, creating new file');
   }
   
+  // Calculate the start of the day for timestamp comparison
+  // This ensures we group checks from the same calendar day
+  const secondsInDay = 24 * 60 * 60;
+  const todayStartTimestamp = Math.floor(currentUnixTimestamp / secondsInDay) * secondsInDay;
+  
   // Check if we already have an entry for today in history
   const todayHistoryIndex = history.findIndex(item => 
-    getDateString(item.timestamp, config.timezone || 'UTC') === currentDate
+    Math.floor(item.timestamp / secondsInDay) === Math.floor(currentUnixTimestamp / secondsInDay)
   );
   
   if (todayHistoryIndex === -1) {
     // Add today's daily status to history (good/error)
     const dailyEntry = {
-      date: currentDate,
-      timestamp: currentUnixTimestamp,
+      timestamp: todayStartTimestamp, // Unix timestamp for start of the day
       status: hasError ? 'error' : 'good' // Daily status is good or error
     };
     
@@ -169,7 +173,7 @@ async function runStatusCheck() {
     // Update today's status if it changed
     if (history[todayHistoryIndex].status === 'good' && hasError) {
       history[todayHistoryIndex].status = 'error';
-      history[todayHistoryIndex].timestamp = currentUnixTimestamp; // Update timestamp
+      history[todayHistoryIndex].timestamp = todayStartTimestamp; // Update to today's start timestamp
       console.log(`Updated today's status to error: ${currentDate}`);
     }
   }

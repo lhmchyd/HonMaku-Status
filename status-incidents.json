@@ -1,1 +1,74 @@
-[]
+[
+  {
+    "date": "2025-10-28",
+    "timestamp": 1761683228,
+    "service": "https://example.com",
+    "name": "Main Website",
+    "status": 500,
+    "error": "Internal Server Error",
+    "responseTime": 12
+  },
+  {
+    "date": "2025-10-26",
+    "timestamp": 1761510428,
+    "service": "https://api.example.com",
+    "name": "API Server",
+    "status": null,
+    "error": "getaddrinfo ENOTFOUND api.example.com",
+    "responseTime": 15
+  },
+  {
+    "date": "2025-10-24",
+    "timestamp": 1761337628,
+    "service": "https://database.example.com",
+    "name": "Database",
+    "status": null,
+    "error": "Connection timeout",
+    "responseTime": 30000
+  },
+  {
+    "date": "2025-10-21",
+    "timestamp": 1761078428,
+    "service": "https://cdn.example.com",
+    "name": "CDN",
+    "status": 503,
+    "error": "Service Unavailable",
+    "responseTime": 8
+  },
+  {
+    "date": "2025-10-19",
+    "timestamp": 1760905628,
+    "service": "https://auth.example.com",
+    "name": "Authentication Service",
+    "status": 404,
+    "error": "Not Found",
+    "responseTime": 45
+  },
+  {
+    "date": "2025-10-16",
+    "timestamp": 1760646428,
+    "service": "https://payments.example.com",
+    "name": "Payment Gateway",
+    "status": null,
+    "error": "getaddrinfo ENOTFOUND payments.example.com",
+    "responseTime": 18
+  },
+  {
+    "date": "2025-10-14",
+    "timestamp": 1760473628,
+    "service": "https://storage.example.com",
+    "name": "File Storage",
+    "status": 502,
+    "error": "Bad Gateway",
+    "responseTime": 10
+  },
+  {
+    "date": "2025-10-11",
+    "timestamp": 1760214428,
+    "service": "https://monitoring.example.com",
+    "name": "Monitoring Service",
+    "status": null,
+    "error": "SSL certificate error",
+    "responseTime": 22
+  }
+]

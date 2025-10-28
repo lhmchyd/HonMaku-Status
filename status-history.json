@@ -1,7 +1,118 @@
 [
   {
-    "date": "2025-10-28",
-    "timestamp": 1761676346,
+    "timestamp": 1761667200,
+    "status": "good"
+  },
+  {
+    "timestamp": 1761580800,
+    "status": "error"
+  },
+  {
+    "timestamp": 1761494400,
+    "status": "good"
+  },
+  {
+    "timestamp": 1761408000,
+    "status": "good"
+  },
+  {
+    "timestamp": 1761321600,
+    "status": "error"
+  },
+  {
+    "timestamp": 1761235200,
+    "status": "good"
+  },
+  {
+    "timestamp": 1761148800,
+    "status": "good"
+  },
+  {
+    "timestamp": 1761062400,
+    "status": "good"
+  },
+  {
+    "timestamp": 1760976000,
+    "status": "error"
+  },
+  {
+    "timestamp": 1760889600,
+    "status": "good"
+  },
+  {
+    "timestamp": 1760803200,
+    "status": "good"
+  },
+  {
+    "timestamp": 1760716800,
+    "status": "error"
+  },
+  {
+    "timestamp": 1760630400,
+    "status": "good"
+  },
+  {
+    "timestamp": 1760544000,
+    "status": "good"
+  },
+  {
+    "timestamp": 1760457600,
+    "status": "good"
+  },
+  {
+    "timestamp": 1760371200,
+    "status": "error"
+  },
+  {
+    "timestamp": 1760284800,
+    "status": "good"
+  },
+  {
+    "timestamp": 1760198400,
+    "status": "good"
+  },
+  {
+    "timestamp": 1760112000,
+    "status": "error"
+  },
+  {
+    "timestamp": 1760025600,
+    "status": "good"
+  },
+  {
+    "timestamp": 1759939200,
+    "status": "good"
+  },
+  {
+    "timestamp": 1759852800,
+    "status": "good"
+  },
+  {
+    "timestamp": 1759766400,
+    "status": "error"
+  },
+  {
+    "timestamp": 1759680000,
+    "status": "good"
+  },
+  {
+    "timestamp": 1759593600,
+    "status": "good"
+  },
+  {
+    "timestamp": 1759507200,
+    "status": "good"
+  },
+  {
+    "timestamp": 1759420800,
+    "status": "error"
+  },
+  {
+    "timestamp": 1759334400,
+    "status": "good"
+  },
+  {
+    "timestamp": 1759248000,
     "status": "good"
   }
 ]

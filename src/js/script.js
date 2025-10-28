@@ -100,44 +100,34 @@ function generateUptimeBars(result, isCurrentlyUp) {
     const now = Date.now() / 1000; // Current Unix timestamp
     const secondsInDay = 24 * 60 * 60;
     
-    // Use the history array which contains daily status (good/error)
-    const historyMap = {};
-    history.forEach(dailyEntry => {
-        historyMap[dailyEntry.date] = dailyEntry.status; // 'good' or 'error'
-    });
-    
     for (let i = 0; i < 60; i++) {
         // Calculate the date for this position in the bar
         const checkDateTimestamp = now - (59 - i) * secondsInDay;
         const checkDate = new Date(checkDateTimestamp * 1000);
         
-        // Format date to match the history entries (YYYY-MM-DD format)
-        const dateStr = checkDate.getFullYear() + '-' + 
-                       String(checkDate.getMonth() + 1).padStart(2, '0') + '-' + 
-                       String(checkDate.getDate()).padStart(2, '0');
+        // Calculate the start of this day for comparison
+        const dayStartTimestamp = Math.floor(checkDateTimestamp / secondsInDay) * secondsInDay;
         
         let dayStatus = 'unknown'; // Default to unknown for no data
-        let dayStatusText = 'No data';
         let dayDateText = formatTooltipDate(checkDate);
         
-        // Check if we have a history entry for this day
-        if (historyMap[dateStr]) {
-            if (historyMap[dateStr] === 'error') {
-                dayStatus = 'down'; // Error means down
-                dayStatusText = 'Error';
-            } else {
-                dayStatus = 'up'; // Good means up
-                dayStatusText = 'Operational';
-            }
-        }
+        // Find the history entry for this specific day by comparing day-start timestamps
+        const dayEntry = history.find(entry => 
+            Math.floor(entry.timestamp / secondsInDay) === Math.floor(dayStartTimestamp / secondsInDay)
+        );
         
         // Create tooltip content based on status
         let tooltipLayoutText = '';
-        if (dayStatus === 'up') {
-            tooltipLayoutText = 'No downtime recorded on this day.';
-        } else if (dayStatus === 'down') {
-            tooltipLayoutText = 'Downtime recorded on this day.';
-        } else { // unknown
+        if (dayEntry) {
+            if (dayEntry.status === 'error') {
+                dayStatus = 'down'; // Error means down
+                tooltipLayoutText = 'Downtime recorded on this day.';
+            } else {
+                dayStatus = 'up'; // Good means up
+                tooltipLayoutText = 'No downtime recorded on this day.';
+            }
+        } else {
+            // No data for this day
             tooltipLayoutText = 'No data exists for this day.';
         }
         
@@ -150,13 +140,12 @@ function generateUptimeBars(result, isCurrentlyUp) {
         
         if (i === 59) { // Today shows current status
             const todayStatus = isCurrentlyUp ? 'up' : 'down';
-            const todayStatusText = isCurrentlyUp ? 'Operational' : 'Error';
             const todayDateText = formatTooltipDate(new Date());
             
             const todayTooltipContent = `
                 <div class="tooltip-date">${todayDateText}</div>
                 <div class="tooltip-layout">
-                    ${todayStatusText}
+                    ${isCurrentlyUp ? 'No downtime recorded on this day.' : 'Downtime recorded on this day.'}
                 </div>
             `;
             
