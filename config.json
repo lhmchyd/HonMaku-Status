@@ -1,24 +1,19 @@
 {
-  "sites": [
+  "title": "Service Status",
+  "description": "Real-time status monitoring for our services",
+  "githubRepo": "lhmchyd/HonMaku-Status",
+  "githubBranch": "main",
+  "updateInterval": 30000,
+  "checkInterval": 30000,
+  "services": [
     {
-      "name": "Main Website",
-      "url": "https://example.com",
-      "timeout": 10000
+      "name": "AniList",
+      "url": "https://anilist.co"
     },
     {
-      "name": "API Server",
-      "url": "https://api.example.com/health",
-      "timeout": 10000
-    },
-    {
-      "name": "Blog",
-      "url": "https://blog.example.com",
-      "timeout": 10000
+      "name": "Giscus",
+      "url": "https://giscus.appxs"
     }
   ],
-  "settings": {
-    "maxHistoryChecks": 100,
-    "maxDailySnapshots": 60,
-    "timezone": "Asia/Jakarta"
-  }
+  "dateFormat": "12hour" 
 }
