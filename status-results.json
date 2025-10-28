@@ -1,21 +1,22 @@
 {
-  "lastChecked": "2025-10-28T15:34:50.319Z",
-  "results": [
+  "timestamp": 1761666297694,
+  "date": "2025-10-28",
+  "checks": [
     {
-      "url": "https://anilist.co",
-      "status": 200,
-      "statusText": "OK",
-      "responseTime": 947,
-      "error": null,
-      "timestamp": "2025-10-28T15:34:50.148Z"
+      "name": "Main Website",
+      "url": "https://example.com",
+      "status": "up",
+      "statusCode": 200,
+      "responseTime": 121,
+      "error": null
     },
     {
-      "url": "https://giscus.app",
-      "status": 200,
-      "statusText": "OK",
-      "responseTime": 171,
-      "error": null,
-      "timestamp": "2025-10-28T15:34:50.319Z"
+      "name": "API Server",
+      "url": "https://api.example.com",
+      "status": "down",
+      "statusCode": null,
+      "responseTime": 20,
+      "error": "getaddrinfo ENOTFOUND api.example.com"
     }
   ]
 }
