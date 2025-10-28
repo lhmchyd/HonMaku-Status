@@ -1,5 +1,5 @@
 {
-  "timestamp": 1761668693875,
+  "timestamp": 1761669179710,
   "date": "2025-10-28",
   "checks": [
     {
@@ -7,7 +7,7 @@
       "url": "https://example.com",
       "status": "up",
       "statusCode": 200,
-      "responseTime": 169,
+      "responseTime": 105,
       "error": null
     },
     {
@@ -15,7 +15,7 @@
       "url": "https://api.example.com/health",
       "status": "down",
       "statusCode": null,
-      "responseTime": 26,
+      "responseTime": 17,
       "error": "getaddrinfo ENOTFOUND api.example.com"
     },
     {
@@ -23,7 +23,7 @@
       "url": "https://blog.example.com",
       "status": "down",
       "statusCode": null,
-      "responseTime": 35,
+      "responseTime": 17,
       "error": "getaddrinfo ENOTFOUND blog.example.com"
     }
   ]
