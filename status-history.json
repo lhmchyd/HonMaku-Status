@@ -1,5 +1,26 @@
 [
   {
+    "lastChecked": "2025-10-28T19:25:32.794Z",
+    "results": [
+      {
+        "url": "https://anilist.co",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 609,
+        "error": null,
+        "timestamp": "2025-10-28T19:25:32.772Z"
+      },
+      {
+        "url": "https://giscus.apps",
+        "status": null,
+        "statusText": "Error",
+        "responseTime": 21,
+        "error": "getaddrinfo ENOTFOUND giscus.apps",
+        "timestamp": "2025-10-28T19:25:32.794Z"
+      }
+    ]
+  },
+  {
     "lastChecked": "2025-10-28T19:12:00.169Z",
     "results": [
       {
@@ -2081,27 +2102,6 @@
         "responseTime": 152,
         "error": null,
         "timestamp": "2025-10-27T20:35:51.235Z"
-      }
-    ]
-  },
-  {
-    "lastChecked": "2025-10-27T20:23:10.204Z",
-    "results": [
-      {
-        "url": "https://anilist.co",
-        "status": 200,
-        "statusText": "OK",
-        "responseTime": 1366,
-        "error": null,
-        "timestamp": "2025-10-27T20:23:10.098Z"
-      },
-      {
-        "url": "https://giscus.app",
-        "status": 200,
-        "statusText": "OK",
-        "responseTime": 104,
-        "error": null,
-        "timestamp": "2025-10-27T20:23:10.203Z"
       }
     ]
   }
