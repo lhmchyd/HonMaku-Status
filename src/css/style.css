@@ -216,7 +216,7 @@ h1 {
     border-radius: 2px; /* Similar to rounded-xs in Tailwind */
     transition: all 0.2s ease;
     position: relative;
-    cursor: pointer;
+    cursor: default; /* Normal cursor instead of pointer */
 }
 
 .uptime-day.up {
@@ -252,14 +252,18 @@ h1 {
     background: #1a1a1a;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    padding: 12px 16px;
+    padding: 14px 18px;
     font-size: 12px;
-    white-space: nowrap;
+    min-width: 240px; /* Longer width to show more information */
+    min-height: 50px; /* Increased height */
+    max-width: 300px; /* Maximum width to prevent overly wide tooltips */
     opacity: 0;
     visibility: hidden;
     transition: all 0.2s ease;
     pointer-events: none;
     z-index: 1000;
+    text-align: left; /* Left align the text */
+    white-space: normal; /* Allow text wrapping */
 }
 
 .uptime-day:hover .uptime-tooltip {

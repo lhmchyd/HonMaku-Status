@@ -84,6 +84,13 @@ function formatDateLong(date) {
     return `${month} ${day}, ${year}`;
 }
 
+function formatDateForComparison(date) {
+    // Format date to YYYY-MM-DD for comparing with incident dates
+    return date.getFullYear() + '-' + 
+           String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+           String(date.getDate()).padStart(2, '0');
+}
+
 function formatTooltipDate(date) {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -107,6 +114,7 @@ function generateUptimeBars(result, isCurrentlyUp) {
         
         // Calculate the start of this day for comparison
         const dayStartTimestamp = Math.floor(checkDateTimestamp / secondsInDay) * secondsInDay;
+        const nextDayStartTimestamp = dayStartTimestamp + (24 * 60 * 60);
         
         let dayStatus = 'unknown'; // Default to unknown for no data
         let dayDateText = formatTooltipDate(checkDate);
@@ -121,7 +129,30 @@ function generateUptimeBars(result, isCurrentlyUp) {
         if (dayEntry) {
             if (dayEntry.status === 'error') {
                 dayStatus = 'down'; // Error means down
-                tooltipLayoutText = 'Downtime recorded on this day.';
+                // Find specific incident information for this day to show in tooltip
+                const dayIncidents = incidents.filter(incident => 
+                    incident.timestamp >= dayStartTimestamp && incident.timestamp < nextDayStartTimestamp
+                );
+                
+                if (dayIncidents.length > 0) {
+                    // Show first incident as example in the requested format
+                    const incident = dayIncidents[0];
+                    let errorText = incident.error || 'Service error occurred';
+                    // Limit error text length for display
+                    if (errorText.length > 70) {
+                        errorText = errorText.substring(0, 67) + '...';
+                    }
+                    tooltipLayoutText = `${incident.name || incident.service}<br>${errorText}`;
+                    
+                    // If there are multiple incidents on the same day, indicate that
+                    if (dayIncidents.length > 1) {
+                        tooltipLayoutText += `<br><small>+${dayIncidents.length - 1} more incident${dayIncidents.length > 2 ? 's' : ''}</small>`;
+                    }
+                } else {
+                    // Even if we know there was an error day but no specific incident data, 
+                    // we can still show that there was downtime
+                    tooltipLayoutText = 'Downtime recorded on this day.<br>Check incident history for details.';
+                }
             } else {
                 dayStatus = 'up'; // Good means up
                 tooltipLayoutText = 'No downtime recorded on this day.';
@@ -131,6 +162,7 @@ function generateUptimeBars(result, isCurrentlyUp) {
             tooltipLayoutText = 'No data exists for this day.';
         }
         
+        // Fixed size tooltip content
         const tooltipContent = `
             <div class="tooltip-date">${dayDateText}</div>
             <div class="tooltip-layout">
@@ -142,10 +174,45 @@ function generateUptimeBars(result, isCurrentlyUp) {
             const todayStatus = isCurrentlyUp ? 'up' : 'down';
             const todayDateText = formatTooltipDate(new Date());
             
+            // Calculate the start of today for comparison
+            const today = new Date();
+            const dayStartTimestamp = Math.floor(today.getTime() / 1000 / (24 * 60 * 60)) * (24 * 60 * 60);
+            const nextDayStartTimestamp = dayStartTimestamp + (24 * 60 * 60);
+            
+            let todayTooltipLayoutText = '';
+            if (isCurrentlyUp) {
+                todayTooltipLayoutText = 'No downtime recorded on this day.';
+            } else {
+                // Check if there are incidents for today
+                const todayIncidents = incidents.filter(incident => 
+                    incident.timestamp >= dayStartTimestamp && incident.timestamp < nextDayStartTimestamp
+                );
+                
+                if (todayIncidents.length > 0) {
+                    // Show first incident as example in the requested format
+                    const incident = todayIncidents[0];
+                    let errorText = incident.error || 'Service error occurred';
+                    // Limit error text length for display
+                    if (errorText.length > 70) {
+                        errorText = errorText.substring(0, 67) + '...';
+                    }
+                    todayTooltipLayoutText = `${incident.name || incident.service}<br>${errorText}`;
+                    
+                    // If there are multiple incidents today, indicate that
+                    if (todayIncidents.length > 1) {
+                        todayTooltipLayoutText += `<br><small>+${todayIncidents.length - 1} more incident${todayIncidents.length > 2 ? 's' : ''}</small>`;
+                    }
+                } else {
+                    // Even if we know there was an error day but no specific incident data, 
+                    // we can still show that there was downtime
+                    todayTooltipLayoutText = 'Downtime recorded on this day.<br>Check incident history for details.';
+                }
+            }
+            
             const todayTooltipContent = `
                 <div class="tooltip-date">${todayDateText}</div>
                 <div class="tooltip-layout">
-                    ${isCurrentlyUp ? 'No downtime recorded on this day.' : 'Downtime recorded on this day.'}
+                    ${todayTooltipLayoutText}
                 </div>
             `;
             
@@ -268,26 +335,29 @@ async function loadStatus() {
         historyContainer.innerHTML = '';
         
         if (incidents.length > 0) {
-            // Group incidents by date
+            // Group incidents by date using timestamps
             const incidentsByDate = {};
+            const secondsInDay = 24 * 60 * 60;
             
             incidents.forEach(incident => {
-                const dateStr = incident.date; // Use the date field from the incident
+                // Calculate the date from the timestamp
+                const incidentDayStart = Math.floor(incident.timestamp / secondsInDay) * secondsInDay;
                 
-                if (!incidentsByDate[dateStr]) {
-                    incidentsByDate[dateStr] = {
-                        date: dateStr,
+                if (!incidentsByDate[incidentDayStart]) {
+                    incidentsByDate[incidentDayStart] = {
+                        dayStart: incidentDayStart,
+                        dateObj: new Date(incidentDayStart * 1000),
                         incidents: []
                     };
                 }
                 
-                incidentsByDate[dateStr].incidents.push(incident);
+                incidentsByDate[incidentDayStart].incidents.push(incident);
             });
             
             // Convert to array and sort by date (most recent first)
             const sortedIncidents = Object.keys(incidentsByDate)
-                .map(dateKey => incidentsByDate[dateKey])
-                .sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date, most recent first
+                .map(dayStartKey => incidentsByDate[dayStartKey])
+                .sort((a, b) => b.dayStart - a.dayStart); // Sort by timestamp, most recent first
             
             if (sortedIncidents.length > 0) {
                 // Display each incident date
@@ -295,9 +365,12 @@ async function loadStatus() {
                     const incidentDate = document.createElement('div');
                     incidentDate.className = 'incident-date';
                     
+                    // Format the date for display
+                    const displayDate = formatDateLong(incidentGroup.dayStart);
+                    
                     incidentDate.innerHTML = `
                         <div class="incident-date-header">
-                            <h3>${incidentGroup.date}</h3>
+                            <h3>${displayDate}</h3>
                         </div>
                         <div class="incident-list">
                             ${incidentGroup.incidents.map(incident => `
@@ -331,7 +404,12 @@ async function loadStatus() {
         console.error('Error loading status:', error);
         document.getElementById('last-updated').textContent = 'Error';
         
-        setTimeout(() => loadStatus(), 5000);
+        // Only retry after a delay to prevent rapid retry loops
+        setTimeout(() => {
+            // Clear the container to try again
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            loadStatus();
+        }, 5000);
     }
 }
 
