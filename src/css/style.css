@@ -213,7 +213,7 @@ h1 {
 .uptime-day {
     flex: 1;
     background: #1a1a1a;
-    border-radius: 1px;
+    border-radius: 2px; /* Similar to rounded-xs in Tailwind */
     transition: all 0.2s ease;
     position: relative;
     cursor: pointer;
@@ -233,6 +233,10 @@ h1 {
 
 .uptime-day.partial {
     background: linear-gradient(to top, #10b981 70%, #f59e0b 70%);
+}
+
+.uptime-day.unknown {
+    background: #4b5563; /* Gray color for unknown status */
 }
 
 .uptime-day:hover {

@@ -1,271 +1,200 @@
-# HonMaku-Status Improvements
+# HonMaku-Status (Simplified)
 
-## Problems Fixed
+A simple service status monitoring system with Unix timestamps, running locally with configurable services and visual uptime tracking.
 
-### 1. **status-day.json Not Being Generated**
-- **Root Cause**: Missing logic to detect completed days and extract daily snapshots
-- **Solution**: Implemented proper day completion detection and snapshot extraction
+## Features
 
-### 2. **Timezone Issues**
-- **Problem**: Date calculations not considering timezone
-- **Solution**: Using `Intl.DateTimeFormat` with configurable timezone
+- ✅ **Configurable Services**: Define services in config.json
+- ✅ **Unix Timestamps**: Clean and efficient data storage
+- ✅ **Local Execution**: Runs locally without complex setup
+- ✅ **Visual Uptime Bars**: 60-day history visualization
+- ✅ **Incident Tracking**: Detailed error logs when services fail
+- ✅ **Interactive Tooltips**: Hover for detailed status information
 
-### 3. **No Clear Daily Snapshot Logic**
-- **Problem**: Unclear when and how to create daily snapshots
-- **Solution**: Take the last check from each completed day (excluding today)
+## Quick Start
 
-### 4. **Poor Error Handling**
-- **Problem**: File read/write failures not handled properly
-- **Solution**: Added safe file operations with fallbacks
-
-## Key Improvements
-
-### ✅ Proper Daily Snapshot Generation
-```javascript
-// Only process completed days (not today)
-if (date === today) {
-  return; // Skip today as it's not complete
-}
-
-// Take the last check of the day
-const lastCheck = checks.reduce((latest, current) => 
-  current.timestamp > latest.timestamp ? current : latest
-);
-```
-
-### ✅ Timezone Support
-```javascript
-const formatter = new Intl.DateTimeFormat('en-CA', {
-  timeZone: CONFIG.timezone,  // e.g., 'Asia/Jakarta'
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit'
-});
-```
-
-### ✅ Summary Statistics
-Each daily snapshot includes:
-- Total checks
-- Up/down count
-- Uptime percentage
-- Average response time
-
-### ✅ Safe File Operations
-- Graceful handling of missing files
-- Proper error logging
-- Atomic writes
-
-## Implementation Steps
-
-### 1. Update check-status.js
-Replace your existing `scripts/check-status.js` with the improved version.
-
-### 2. Configure Your Sites
-Edit the `CONFIG` object in `check-status.js`:
-
-```javascript
-const CONFIG = {
-  urls: [
-    { name: 'My Website', url: 'https://yoursite.com', timeout: 10000 },
-    { name: 'My API', url: 'https://api.yoursite.com', timeout: 10000 }
-  ],
-  maxHistoryChecks: 100,      // Keep last 100 detailed checks
-  maxDailySnapshots: 60,      // Keep 60 days of snapshots
-  timezone: 'Asia/Jakarta'    // Your timezone
-};
-```
-
-### 3. Update GitHub Actions Workflow
-Replace `.github/workflows/status-check.yml` with the improved version.
-
-### 4. Initialize Empty Files (Optional)
+### 1. Install Dependencies
 ```bash
-# Create empty JSON files if they don't exist
-echo "[]" > status-history.json
-echo "[]" > status-day.json
-echo "{}" > status-results.json
+npm install
 ```
 
-### 5. Test Locally
-```bash
-# Run the check script
-node scripts/check-status.js
-
-# Verify files are created
-ls -l status-*.json
-
-# Check the content
-cat status-day.json
-```
-
-### 6. Commit and Push
-```bash
-git add .
-git commit -m "Improve status check with daily snapshots"
-git push
-```
-
-## How It Works
-
-### Flow Diagram
-```
-Every 5 minutes:
-1. Check all configured URLs
-2. Create current check result
-3. Add to status-history.json (keep last 100)
-4. Analyze history for completed days
-5. Extract last check from each completed day
-6. Update status-day.json (keep last 60 days)
-7. Commit and push changes
-```
-
-### Daily Snapshot Logic
-```
-Day 1: [Check1, Check2, Check3, ..., Check288] → Take Check288
-Day 2: [Check1, Check2, Check3, ..., Check288] → Take Check288
-...
-Today: [Check1, Check2, Check3, ...] → Skip (incomplete)
-```
-
-## Data Structure
-
-### status-results.json (Current Status)
+### 2. Configure Services
+Edit `config.json` to add your services to monitor:
 ```json
 {
-  "timestamp": 1730084400000,
-  "date": "2025-10-28",
-  "checks": [
+  "title": "Service Status",
+  "description": "Real-time status monitoring for our services",
+  "updateInterval": 30000,
+  "checkInterval": 30000,
+  "timezone": "UTC",
+  "dateFormat": "12hour",
+  "services": [
     {
-      "name": "Main Website",
+      "name": "My Website",
       "url": "https://example.com",
-      "status": "up",
-      "statusCode": 200,
-      "responseTime": 245,
-      "error": null
+      "timeout": 10000
+    },
+    {
+      "name": "My API",
+      "url": "https://api.example.com",
+      "timeout": 10000
     }
   ]
 }
 ```
 
-### status-history.json (Recent Checks)
-```json
-[
-  {
-    "timestamp": 1730084400000,
-    "date": "2025-10-28",
-    "checks": [...]
-  },
-  // ... up to 100 most recent checks
-]
+### 3. Run Status Checks
+```bash
+# Run a single check
+npm run check
+
+# Start local server to view status page
+npm start
 ```
 
-### status-day.json (Daily Snapshots)
+## Data Files
+
+The system uses three JSON files:
+
+#### `status-results.json` - Current Status (5-minute intervals)
 ```json
-[
-  {
-    "date": "2025-10-27",
-    "timestamp": 1730073600000,
-    "checks": [...],
-    "summary": {
-      "total": 3,
-      "up": 3,
-      "down": 0,
-      "uptime": "100.00%",
-      "avgResponseTime": 234
+{
+  "timestamp": 1700000000,
+  "results": [
+    {
+      "url": "https://example.com",
+      "status": 200,
+      "statusText": "OK",
+      "responseTime": 125,
+      "error": null,
+      "timestamp": 1700000000
     }
-  },
-  // ... up to 60 days
+  ]
+}
+```
+
+#### `status-history.json` - Daily Status History
+```json
+[
+  {
+    "date": "2024-10-28",
+    "timestamp": 1700000000,
+    "status": "good"
+  }
 ]
 ```
 
-## Frontend Integration
-
-Your existing `script.js` can now use `status-day.json` for long-term trends:
-
-```javascript
-// Fetch daily snapshots
-fetch('status-day.json')
-  .then(res => res.json())
-  .then(daily => {
-    // Calculate 30-day uptime
-    const last30Days = daily.slice(0, 30);
-    const totalUptime = last30Days.reduce((sum, day) => {
-      return sum + parseFloat(day.summary.uptime);
-    }, 0) / last30Days.length;
-    
-    console.log(`30-day average uptime: ${totalUptime.toFixed(2)}%`);
-  });
-```
-
-## Advanced Configuration
-
-### Custom Timezone
-```javascript
-timezone: 'America/New_York'  // EST/EDT
-timezone: 'Europe/London'      // GMT/BST
-timezone: 'Asia/Tokyo'         // JST
-timezone: 'UTC'                // Universal
-```
-
-### Adjust Retention
-```javascript
-maxHistoryChecks: 288,    // 24 hours at 5-min intervals
-maxDailySnapshots: 90,    // 3 months of daily data
-```
-
-### Custom Timeout
-```javascript
-urls: [
-  { name: 'Fast API', url: '...', timeout: 5000 },   // 5 seconds
-  { name: 'Slow Service', url: '...', timeout: 30000 } // 30 seconds
+#### `status-incidents.json` - Detailed Incident History
+```json
+[
+  {
+    "date": "2024-10-28",
+    "timestamp": 1700000000,
+    "service": "https://example.com",
+    "name": "My Website",
+    "status": null,
+    "error": "getaddrinfo ENOTFOUND example.com",
+    "responseTime": 17
+  }
 ]
 ```
 
-## Troubleshooting
+## How It Works
 
-### status-day.json still empty?
-1. Check if enough time has passed (need at least 1 complete day)
-2. Verify timezone configuration is correct
-3. Check console logs in GitHub Actions
+### Flow
+```
+Every 5 minutes:
+1. Check all configured services from config.json
+2. Update status-results.json with current 5-minute status
+3. Update status-history.json with daily status (good/error)
+4. Add detailed incidents to status-incidents.json if services fail
+5. Frontend visualizes data with 60-day uptime bars
+```
 
-### Wrong dates in snapshots?
-- Verify `timezone` setting matches your location
-- Check system time in GitHub Actions runner
+### Visualization
+- **Green bars**: Days with no errors ("No downtime recorded on this day.")
+- **Red bars**: Days with errors ("Downtime recorded on this day.") 
+- **Gray bars**: Days with no data ("No data exists for this day.")
+- **Tooltips**: Hover over bars for date and status details
 
-### Files not updating?
-- Check GitHub Actions logs for errors
-- Verify repository permissions (needs `contents: write`)
-- Ensure files are being committed properly
+## Running Locally
 
-## Monitoring
+### Option 1: Using package.json scripts
+```bash
+# Install dependencies
+npm install
 
-Check GitHub Actions runs:
-1. Go to your repository
-2. Click "Actions" tab
-3. Select "Status Check" workflow
-4. Review recent runs
+# Run the status check (one-time)
+npm run check
+
+# Start local server to view status page
+npm start
+```
+
+## Configuration
+
+### Settings in config.json:
+- `services`: Array of services to monitor with name, url, and timeout
+- `timezone`: Timezone for date calculations (default: "UTC")
+- `updateInterval`: Frontend refresh interval in ms (default: 30000)
+- `checkInterval`: Backend check interval in ms (default: 30000)
+
+### Adding Services
+Add services to the `services` array in config.json:
+```json
+{
+  "services": [
+    {
+      "name": "Website",
+      "url": "https://yoursite.com",
+      "timeout": 10000
+    }
+  ]
+}
+```
+
+## Frontend Features
+
+- **Real-time status updates** with Unix timestamp display
+- **60-day visual uptime timeline** with color-coded status
+- **Interactive tooltips** showing detailed status on hover
+- **Incident history** section with date-organized errors
+- **Responsive dark theme** design
+
+## Deployment
+
+### GitHub Pages
+1. Push the repository to GitHub
+2. Enable GitHub Pages in repository settings
+3. The status page will be available at `https://yourusername.github.io/repository-name`
+
+### Local Operation
+1. Run `npm run check` periodically to update status
+2. Serve files through a web server (not direct file opening)
+3. Access the status page through the server URL
 
 ## Benefits of This Approach
 
-✅ **Efficient Storage**: Only keeps detailed checks for recent period  
-✅ **Long-term History**: Daily snapshots for trends and analytics  
-✅ **API Ready**: `status-day.json` perfect for external consumption  
-✅ **Timezone Aware**: Correct date calculations anywhere in the world  
-✅ **Robust**: Proper error handling and safe file operations  
-✅ **Scalable**: Can easily add more sites without performance issues  
+✅ **Simple Architecture**: Only 3 JSON files needed  
+✅ **Configurable**: Services defined in config.json  
+✅ **Unix Timestamps**: Efficient data storage and processing  
+✅ **Visual History**: 60-day uptime timeline  
+✅ **Local Operation**: Easy to run and maintain  
+✅ **Detailed Logging**: Incident tracking with error details
 
-## Next Steps
+## Troubleshooting
 
-1. **Add Notifications**: Integrate with Discord, Slack, or email
-2. **Add Metrics**: Track MTTR (Mean Time To Recovery)
-3. **Add Incidents**: Log and track outages
-4. **Add Alerts**: Set up thresholds for response time
-5. **Add Charts**: Visualize uptime trends on frontend
+### Visual elements not updating?
+- Clear browser cache or do a hard refresh (Ctrl+F5)
+- Ensure you're serving through a web server, not opening files directly
+- Run `npm run check` to generate fresh data
 
-## Questions?
+### Status files not updating?
+- Check that you're running `npm run check` 
+- Verify that your config.json has properly formatted services
+- Check if your service URLs are accessible
 
-If you encounter issues, check:
-- GitHub Actions logs
-- Console output from `check-status.js`
-- File permissions
-- JSON file structure (valid JSON)
+### Bars showing incorrect status?
+- The system only marks days as "error" when at least one service fails during that day
+- Run the check script multiple times to build up historical data
+- Gray bars indicate days with no historical data

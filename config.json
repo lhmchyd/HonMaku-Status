@@ -1,19 +1,24 @@
 {
   "title": "Service Status",
   "description": "Real-time status monitoring for our services",
-  "githubRepo": "lhmchyd/HonMaku-Status",
-  "githubBranch": "main",
   "updateInterval": 30000,
   "checkInterval": 30000,
   "services": [
     {
       "name": "AniList",
-      "url": "https://anilist.co"
+      "url": "https://anilist.co",
+      "timeout": 10000
     },
     {
       "name": "Giscus",
-      "url": "https://giscus.apps"
+      "url": "https://giscus.app",
+      "timeout": 10000
     }
   ],
-  "dateFormat": "12hour" 
+  "settings": {
+    "maxHistoryChecks": 100,
+    "maxDailySnapshots": 60,
+    "timezone": "UTC"
+  },
+  "dateFormat": "12hour"
 }

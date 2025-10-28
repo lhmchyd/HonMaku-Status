@@ -1,5 +1,6 @@
 let lastCheckTime = null;
-let fullHistory = [];
+let incidents = [];
+let history = []; // Daily snapshots
 let config = {};
 
 async function loadConfig() {
@@ -12,20 +13,21 @@ async function loadConfig() {
             config = {
                 "title": "Service Status",
                 "description": "Real-time status monitoring for our services",
-                "githubRepo": "lhmchyd/HonMaku-Status",
-                "githubBranch": "main",
                 "updateInterval": 30000,
                 "checkInterval": 30000,
                 "services": [
                     {
                         "name": "AniList",
-                        "url": "https://anilist.co"
+                        "url": "https://anilist.co",
+                        "timeout": 10000
                     },
                     {
                         "name": "Giscus",
-                        "url": "https://giscus.app"
+                        "url": "https://giscus.app",
+                        "timeout": 10000
                     }
                 ],
+                "timezone": "UTC",
                 "dateFormat": "12hour"
             };
         }
@@ -35,27 +37,28 @@ async function loadConfig() {
         config = {
             "title": "Service Status",
             "description": "Real-time status monitoring for our services",
-            "githubRepo": "lhmchyd/HonMaku-Status",
-            "githubBranch": "main",
             "updateInterval": 30000,
             "checkInterval": 30000,
             "services": [
                 {
                     "name": "AniList",
-                    "url": "https://anilist.co"
+                    "url": "https://anilist.co",
+                    "timeout": 10000
                 },
                 {
                     "name": "Giscus",
-                    "url": "https://giscus.app"
+                    "url": "https://giscus.app",
+                    "timeout": 10000
                 }
             ],
+            "timezone": "UTC",
             "dateFormat": "12hour"
         };
     }
 }
 
-function formatDateTime(date) {
-    const d = new Date(date);
+function formatUnixTimestamp(timestamp) {
+    const d = new Date(timestamp * 1000);
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -71,15 +74,8 @@ function formatDateTime(date) {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} ${ampm}`;
 }
 
-function formatDateShort(date) {
-    const d = new Date(date);
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${month}/${day}`;
-}
-
 function formatDateLong(date) {
-    const d = new Date(date);
+    const d = new Date(date * 1000); // Convert Unix timestamp to milliseconds
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const month = months[d.getMonth()];
@@ -88,119 +84,117 @@ function formatDateLong(date) {
     return `${month} ${day}, ${year}`;
 }
 
-function generateUptimeBars(url, isCurrentlyUp) {
-    const days = 60;
+function formatTooltipDate(date) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = months[date.getMonth()];
+    const day = date.getDate(); // Don't pad with zero
+    const year = date.getFullYear();
+    return `${month} ${day}, ${year}`;
+}
+
+function generateUptimeBars(result, isCurrentlyUp) {
     let bars = '';
-    const now = new Date();
     
-    // Create a map of dates to status for faster lookup
-    const dateToStatus = {};
-    fullHistory.forEach(check => {
-        const checkDate = new Date(check.lastChecked);
-        const dateStr = checkDate.toDateString();
-        const serviceResult = check.results.find(r => r.url === url);
-        if (serviceResult) {
-            let dayStatus = 'unknown';
-            if (serviceResult.status && serviceResult.status < 400) {
-                dayStatus = 'up';
-            } else if (serviceResult.status === null || serviceResult.status >= 500) {
-                dayStatus = 'down';
-            } else {
-                dayStatus = 'degraded';
-            }
-            dateToStatus[dateStr] = {
-                status: dayStatus,
-                responseTime: serviceResult.responseTime,
-                error: serviceResult.error,
-                time: formatDateTime(checkDate)
-            };
-        }
+    // Create 60 days of uptime bars (similar to the original)
+    const now = Date.now() / 1000; // Current Unix timestamp
+    const secondsInDay = 24 * 60 * 60;
+    
+    // Use the history array which contains daily status (good/error)
+    const historyMap = {};
+    history.forEach(dailyEntry => {
+        historyMap[dailyEntry.date] = dailyEntry.status; // 'good' or 'error'
     });
     
-    for (let i = days - 1; i >= 0; i--) {
-        const checkDate = new Date(now);
-        checkDate.setDate(checkDate.getDate() - i);
-        const dateStr = checkDate.toDateString();
-        const dateKey = checkDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format for consistent comparison
+    for (let i = 0; i < 60; i++) {
+        // Calculate the date for this position in the bar
+        const checkDateTimestamp = now - (59 - i) * secondsInDay;
+        const checkDate = new Date(checkDateTimestamp * 1000);
         
-        let dayStatus = 'unknown';
-        let dayData = null;
-            
-        // Check if we have data for this exact date
-        const historyForDate = fullHistory.find(check => {
-            const checkDateObj = new Date(check.lastChecked);
-            return checkDateObj.toDateString() === checkDate.toDateString();
-        });
+        // Format date to match the history entries (YYYY-MM-DD format)
+        const dateStr = checkDate.getFullYear() + '-' + 
+                       String(checkDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(checkDate.getDate()).padStart(2, '0');
         
-        if (historyForDate) {
-            const serviceResult = historyForDate.results.find(r => r.url === url);
-            if (serviceResult) {
-                dayData = {
-                    date: formatDateShort(checkDate),
-                    time: formatDateTime(checkDate),
-                    status: serviceResult.status,
-                    statusText: serviceResult.statusText,
-                    responseTime: serviceResult.responseTime,
-                    error: serviceResult.error
-                };
-                
-                if (serviceResult.status && serviceResult.status < 400) {
-                    dayStatus = 'up';
-                } else if (serviceResult.status === null || serviceResult.status >= 500) {
-                    dayStatus = 'down';
-                } else {
-                    dayStatus = 'degraded';
-                }
+        let dayStatus = 'unknown'; // Default to unknown for no data
+        let dayStatusText = 'No data';
+        let dayDateText = formatTooltipDate(checkDate);
+        
+        // Check if we have a history entry for this day
+        if (historyMap[dateStr]) {
+            if (historyMap[dateStr] === 'error') {
+                dayStatus = 'down'; // Error means down
+                dayStatusText = 'Error';
+            } else {
+                dayStatus = 'up'; // Good means up
+                dayStatusText = 'Operational';
             }
         }
         
-        // If no data for that day, show as unknown (gray)
-        if (!dayData) {
-            dayData = {
-                date: formatDateShort(checkDate),
-                time: 'No data',
-                status: 'N/A',
-                statusText: 'No checks recorded'
-            };
+        // Create tooltip content based on status
+        let tooltipLayoutText = '';
+        if (dayStatus === 'up') {
+            tooltipLayoutText = 'No downtime recorded on this day.';
+        } else if (dayStatus === 'down') {
+            tooltipLayoutText = 'Downtime recorded on this day.';
+        } else { // unknown
+            tooltipLayoutText = 'No data exists for this day.';
         }
         
-        const tooltipStatusClass = dayStatus === 'up' ? 'up' : dayStatus === 'down' ? 'down' : '';
-        const dateLong = formatDateLong(checkDate);
-        const responseTime = dayData.responseTime ? `${dayData.responseTime}ms` : '';
-        const downtimeStatus = dayStatus === 'up' ? 'No downtime recorded on this day' : (dayData.error || 'Downtime recorded');
-        
         const tooltipContent = `
-            <div class="tooltip-date">${dateLong} / ${responseTime || '—'}</div>
+            <div class="tooltip-date">${dayDateText}</div>
             <div class="tooltip-layout">
-                ${downtimeStatus}
+                ${tooltipLayoutText}
             </div>
         `;
         
-        bars += `<div class="uptime-day ${dayStatus}"><div class="uptime-tooltip">${tooltipContent}</div></div>`;
+        if (i === 59) { // Today shows current status
+            const todayStatus = isCurrentlyUp ? 'up' : 'down';
+            const todayStatusText = isCurrentlyUp ? 'Operational' : 'Error';
+            const todayDateText = formatTooltipDate(new Date());
+            
+            const todayTooltipContent = `
+                <div class="tooltip-date">${todayDateText}</div>
+                <div class="tooltip-layout">
+                    ${todayStatusText}
+                </div>
+            `;
+            
+            bars += `<div class="uptime-day ${todayStatus}"><div class="uptime-tooltip">${todayTooltipContent}</div></div>`;
+        } else {
+            // Use historical data from daily snapshots
+            bars += `<div class="uptime-day ${dayStatus}"><div class="uptime-tooltip">${tooltipContent}</div></div>`;
+        }
     }
+    
     return bars;
 }
-
-
-
-
 
 async function loadStatus() {
     try {
         const response = await fetch('status-results.json?t=' + Date.now());
         const data = await response.json();
         
-        // Load history
+        // Load history (daily snapshots)
         try {
             const historyResponse = await fetch('status-history.json?t=' + Date.now());
-            fullHistory = await historyResponse.json();
+            history = await historyResponse.json();
         } catch (error) {
             console.log('No history file found');
-            fullHistory = [data]; // Use current data as fallback
+            history = [];
         }
         
-        lastCheckTime = new Date(data.lastChecked).getTime();
-        document.getElementById('last-updated').textContent = formatDateTime(data.lastChecked);
+        // Load incidents
+        try {
+            const incidentsResponse = await fetch('status-incidents.json?t=' + Date.now());
+            incidents = await incidentsResponse.json();
+        } catch (error) {
+            console.log('No incidents file found');
+            incidents = [];
+        }
+        
+        lastCheckTime = data.timestamp * 1000; // Convert Unix timestamp to milliseconds
+        document.getElementById('last-updated').textContent = formatUnixTimestamp(data.timestamp);
         
         const allUp = data.results.every(r => r.status && r.status < 400);
         const hasDown = data.results.some(r => r.status === null || r.status >= 400);
@@ -268,7 +262,7 @@ async function loadStatus() {
                 </div>
                 <div class="uptime-container">
                     <div class="uptime-bar">
-                        ${generateUptimeBars(result.url, isUp)}
+                        ${generateUptimeBars(result, isUp)}
                     </div>
                     <div class="uptime-labels">
                         <span>60 days ago</span>
@@ -280,38 +274,25 @@ async function loadStatus() {
             container.appendChild(item);
         });
 
-        // Update history section
+        // Update history section with incidents
         const historyContainer = document.getElementById('history-container');
         historyContainer.innerHTML = '';
         
-        if (fullHistory.length > 0) {
-            // Show past incidents in date order
+        if (incidents.length > 0) {
+            // Group incidents by date
             const incidentsByDate = {};
             
-            // Group incidents by date
-            fullHistory.forEach(check => {
-                const checkDate = new Date(check.lastChecked);
-                const dateKey = checkDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-                const formattedDate = formatDateLong(checkDate); // e.g., "26 Oct 2025"
+            incidents.forEach(incident => {
+                const dateStr = incident.date; // Use the date field from the incident
                 
-                const hasDown = check.results.some(r => r.status === null || r.status >= 400);
-                
-                if (hasDown) {
-                    if (!incidentsByDate[dateKey]) {
-                        incidentsByDate[dateKey] = {
-                            date: formattedDate,
-                            incidents: []
-                        };
-                    }
-                    
-                    const downServices = check.results.filter(r => r.status === null || r.status >= 400);
-                    downServices.forEach(service => {
-                        incidentsByDate[dateKey].incidents.push({
-                            service: service.url.replace('https://', '').replace('http://', '').split('/')[0],
-                            error: service.error || service.statusText
-                        });
-                    });
+                if (!incidentsByDate[dateStr]) {
+                    incidentsByDate[dateStr] = {
+                        date: dateStr,
+                        incidents: []
+                    };
                 }
+                
+                incidentsByDate[dateStr].incidents.push(incident);
             });
             
             // Convert to array and sort by date (most recent first)
@@ -321,26 +302,27 @@ async function loadStatus() {
             
             if (sortedIncidents.length > 0) {
                 // Display each incident date
-                sortedIncidents.forEach(incident => {
+                sortedIncidents.forEach(incidentGroup => {
                     const incidentDate = document.createElement('div');
                     incidentDate.className = 'incident-date';
+                    
                     incidentDate.innerHTML = `
                         <div class="incident-date-header">
-                            <h3>${incident.date}</h3>
+                            <h3>${incidentGroup.date}</h3>
                         </div>
                         <div class="incident-list">
-                            ${incident.incidents.map(inc => `
+                            ${incidentGroup.incidents.map(incident => `
                                 <div class="incident-item">
-                                    <div class="incident-service">${inc.service}</div>
-                                    <div class="incident-details">${inc.error}</div>
+                                    <div class="incident-service">${incident.name || incident.service}</div>
+                                    <div class="incident-details">${incident.error}</div>
                                 </div>
                             `).join('')}
                         </div>
                     `;
+                    
                     historyContainer.appendChild(incidentDate);
                 });
             } else {
-                // No incidents reported
                 historyContainer.innerHTML = '<div class="no-incidents">No incidents reported.</div>';
             }
         } else {
@@ -371,7 +353,7 @@ async function checkForUpdates() {
         if (response.ok) {
             const data = await response.json();
             const currentUpdateTime = document.getElementById('last-updated').textContent;
-            const newUpdateTime = formatDateTime(data.lastChecked);
+            const newUpdateTime = formatUnixTimestamp(data.timestamp);
             
             // If we have newer data, update just the timestamp and other relevant info
             if (newUpdateTime !== currentUpdateTime) {
