@@ -1,21 +1,21 @@
 {
-  "lastChecked": "2025-10-28T07:40:19.235Z",
+  "lastChecked": "2025-10-28T07:46:05.423Z",
   "results": [
     {
       "url": "https://anilist.co",
       "status": 200,
       "statusText": "OK",
-      "responseTime": 854,
+      "responseTime": 740,
       "error": null,
-      "timestamp": "2025-10-28T07:40:19.094Z"
+      "timestamp": "2025-10-28T07:46:05.294Z"
     },
     {
       "url": "https://giscus.app",
       "status": 200,
       "statusText": "OK",
-      "responseTime": 140,
+      "responseTime": 128,
       "error": null,
-      "timestamp": "2025-10-28T07:40:19.235Z"
+      "timestamp": "2025-10-28T07:46:05.422Z"
     }
   ]
 }
