@@ -1,5 +1,21 @@
 {
-  "timestamp": 1761669892627,
-  "date": "2025-10-28",
-  "checks": []
+  "lastChecked": "2025-10-28T16:49:17.468Z",
+  "results": [
+    {
+      "url": "https://anilist.co",
+      "status": 200,
+      "statusText": "OK",
+      "responseTime": 1092,
+      "error": null,
+      "timestamp": "2025-10-28T16:49:17.442Z"
+    },
+    {
+      "url": "https://giscus.appxs",
+      "status": null,
+      "statusText": "Error",
+      "responseTime": 25,
+      "error": "getaddrinfo ENOTFOUND giscus.appxs",
+      "timestamp": "2025-10-28T16:49:17.468Z"
+    }
+  ]
 }

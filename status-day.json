@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "lastChecked": "2025-10-27T18:29:04.258Z",
+    "results": [
+      {
+        "url": "https://anilist.co",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 609,
+        "error": null,
+        "timestamp": "2025-10-27T18:29:04.121Z"
+      },
+      {
+        "url": "https://giscus.app",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 137,
+        "error": null,
+        "timestamp": "2025-10-27T18:29:04.258Z"
+      }
+    ]
+  },
+  {}
+]
