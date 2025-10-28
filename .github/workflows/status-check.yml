@@ -1,70 +1,40 @@
-name: Status Check
+name: Website Status Check
 
 on:
   schedule:
     # Run every 5 minutes
-    - cron: "*/5 * * * *"
-
-  # Allow manual trigger
-  workflow_dispatch:
-
-  # Allow external trigger via repository dispatch
-  repository_dispatch:
-    types: [status-check]
-
-permissions:
-  contents: write
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Allows manual trigger
 
 jobs:
-  check-status:
+  check-websites:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
-      - name: Checkout repository
+      - name: Check out code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-
-      - name: Install dependencies (if any)
-        run: |
-          if [ -f package.json ]; then
-            npm install
-          else
-            echo "No package.json found — skipping npm install"
-          fi
+          node-version: '18'
 
       - name: Run status check
-        run: node scripts/check-status.js
+        run: node ./scripts/check-status.js
 
-      - name: Verify files exist
+      - name: Commit and push if changed
         run: |
-          echo "Checking generated files..."
-          ls -lah status-*.json || echo "No JSON files found"
-          echo "---"
-          echo "status-results.json (first 20 lines):"
-          head -20 status-results.json || echo "File missing"
-          echo "---"
-          echo "status-day.json entries:"
-          grep -c "date" status-day.json || echo "0"
-
-      - name: Configure Git
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-      - name: Commit and push changes
-        run: |
-          git add status-results.json status-history.json status-day.json
-          if git diff --staged --quiet; then
-            echo "✅ No changes to commit"
-          else
-            git commit -m "Update status: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add status-results.json status-history.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Update status [skip ci]"
             git push
+          else
+            echo "No changes to commit"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
