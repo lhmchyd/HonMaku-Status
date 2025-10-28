@@ -3,11 +3,11 @@ name: Status Check
 on:
   schedule:
     # Run every 5 minutes
-    - cron: '*/5 * * * *'
-  
+    - cron: "*/5 * * * *"
+
   # Allow manual trigger
   workflow_dispatch:
-  
+
   # Allow external trigger via repository dispatch
   repository_dispatch:
     types: [status-check]
@@ -18,44 +18,50 @@ permissions:
 jobs:
   check-status:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      
+          node-version: "20"
+
+      - name: Install dependencies (if any)
+        run: |
+          if [ -f package.json ]; then
+            npm install
+          else
+            echo "No package.json found — skipping npm install"
+          fi
+
       - name: Run status check
-        run: node scripts/check-status.js
-      
+        run: node scripts/checkStatus.js
+
       - name: Verify files exist
         run: |
           echo "Checking generated files..."
-          ls -lah status-*.json
+          ls -lah status-*.json || echo "No JSON files found"
           echo "---"
-          echo "status-results.json:"
-          cat status-results.json | head -20
+          echo "status-results.json (first 20 lines):"
+          head -20 status-results.json || echo "File missing"
           echo "---"
           echo "status-day.json entries:"
-          cat status-day.json | grep -c "date" || echo "0"
-      
+          grep -c "date" status-day.json || echo "0"
+
       - name: Configure Git
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-      
+
       - name: Commit and push changes
         run: |
           git add status-results.json status-history.json status-day.json
-          
-          # Only commit if there are changes
           if git diff --staged --quiet; then
-            echo "No changes to commit"
+            echo "✅ No changes to commit"
           else
             git commit -m "Update status: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
             git push
