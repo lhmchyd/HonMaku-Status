@@ -39,7 +39,7 @@ jobs:
           fi
 
       - name: Run status check
-        run: node scripts/checkStatus.js
+        run: node scripts/check-status.js
 
       - name: Verify files exist
         run: |
