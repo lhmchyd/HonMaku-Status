@@ -1,5 +1,5 @@
 :root {
-    --container-5xl: 44rem;
+    --container-5xl: 47.5rem;
 }
 
 * {
@@ -16,6 +16,9 @@ body {
     color: #fff;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    /* Prevent zoom and horizontal scroll on mobile */
+    touch-action: pan-y;
+    overscroll-behavior-x: none;
 }
 
 .container {
@@ -26,38 +29,47 @@ body {
 
 header {
     padding: 16px 0 16px 0;
-    margin-bottom: 0;
 }
 
 .header-top {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
+    justify-content: space-between;
 }
 
 .home-link {
-    width: 40px;
-    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
     transition: all 0.2s ease;
     flex-shrink: 0;
-}
-
-.home-link:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    text-decoration: none;
 }
 
 .home-link svg {
     width: 20px;
     height: 20px;
     stroke: #fff;
+}
+
+.repo-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    text-decoration: none;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.repo-link:hover {
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 h1 {
@@ -72,7 +84,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
+    padding: 14px;
     width: 100%;
     border-radius: 6px;
     font-size: 13px;
@@ -142,15 +154,14 @@ h1 {
     font-variant-numeric: tabular-nums;
 }
 
-
-
 .services {
     margin: 20px 0 40px 0;
+    overflow: visible;
 }
 
 .service-item {
     padding: 20px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.2s ease;
 }
 
@@ -159,21 +170,21 @@ h1 {
 }
 
 .service-item:last-child {
-    border-bottom: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .service-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 
 .service-name {
     font-size: 16px;
-    font-weight: 500;
-    color: #fff;
     font-weight: 400;
+    color: #fff;
+    text-transform: capitalize;
 }
 
 .service-name.error {
@@ -184,39 +195,51 @@ h1 {
     font-size: 13px;
     color: #10b981;
     font-weight: 500;
-    background: rgba(16, 185, 129, 0.1);
-    padding: 4px 8px;
-    border-radius: 6px;
+    text-transform: capitalize;
 }
 
 .service-status-text.down {
     color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
 }
 
 .service-status-text.degraded {
     color: #f59e0b;
-    background: rgba(245, 158, 11, 0.1);
 }
 
 .uptime-container {
     position: relative;
+    width: 100%;
+    overflow: visible;
 }
 
 .uptime-bar {
-    display: flex;
-    gap: 2px;
+    display: grid;
+    grid-template-columns: repeat(60, 1fr);
+    gap: 5px;
     height: 32px;
-    margin-bottom: 16px;
+    width: 100%;
+    position: relative;
+    overflow: visible;
 }
 
 .uptime-day {
-    flex: 1;
     background: #1a1a1a;
-    border-radius: 2px; /* Similar to rounded-xs in Tailwind */
+    border-radius: 2px;
     transition: all 0.2s ease;
     position: relative;
-    cursor: default; /* Normal cursor instead of pointer */
+    cursor: default;
+    min-width: 0;
+}
+
+/* Extended hover area to include gaps */
+.uptime-day::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    left: -2.5px;
+    right: -2.5px;
+    z-index: 1;
 }
 
 .uptime-day.up {
@@ -236,49 +259,61 @@ h1 {
 }
 
 .uptime-day.unknown {
-    background: #4b5563; /* Gray color for unknown status */
+    background: #4b5563;
 }
 
 .uptime-day:hover {
-    z-index: 10;
+    z-index: 100;
     filter: brightness(1.2);
-}
-
-.uptime-tooltip {
-    position: absolute;
-    bottom: calc(100% + 12px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1a1a1a;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 14px 18px;
-    font-size: 12px;
-    min-width: 240px; /* Longer width to show more information */
-    min-height: 50px; /* Increased height */
-    max-width: 300px; /* Maximum width to prevent overly wide tooltips */
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s ease;
-    pointer-events: none;
-    z-index: 1000;
-    text-align: left; /* Left align the text */
-    white-space: normal; /* Allow text wrapping */
 }
 
 .uptime-day:hover .uptime-tooltip {
     opacity: 1;
     visibility: visible;
+    z-index: 9998;
+    pointer-events: auto;
 }
 
+.uptime-tooltip {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    border: 1px solid #1f1f1f;
+    border-radius: 0;
+    padding: 12px 14px;
+    font-size: 12px;
+    min-width: 240px;
+    min-height: 50px;
+    max-width: 300px;
+    opacity: 0;
+    visibility: hidden;
+    transition: none;
+    pointer-events: none;
+    z-index: 9999;
+    text-align: left;
+    white-space: normal;
+    user-select: text;
+    cursor: text;
+}
+
+.uptime-tooltip:hover {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.uptime-tooltip::before,
 .uptime-tooltip::after {
     content: "";
     position: absolute;
-    top: 100%;
+    bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: #1a1a1a;
+    border: 10px solid transparent;
+    border-bottom-color: #1f1f1f;
+    pointer-events: none;
 }
 
 .tooltip-date {
@@ -300,9 +335,8 @@ h1 {
 }
 
 .tooltip-layout {
-    padding: 8px 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: 8px;
+    padding: 6px 0;
+    margin-top: 6px;
 }
 
 .uptime-labels {
@@ -310,7 +344,7 @@ h1 {
     justify-content: space-between;
     font-size: 11px;
     color: #666;
-    margin-top: 6px;
+    margin-top: 5px;
 }
 
 .response-time {
@@ -320,8 +354,7 @@ h1 {
 }
 
 .history-section {
-    margin: 48px 0 0 0;
-    padding: 32px 0;
+    margin: 24px 0 0 0;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -333,32 +366,33 @@ h1 {
 }
 
 .incident-date {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .incident-date-header {
     margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .incident-date-header h3 {
     font-size: 15px;
     font-weight: 500;
-    color: #aaa;
+    color: #fff;
     margin: 0;
 }
 
 .incident-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 2px;
 }
 
 .incident-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 8px;
+    margin-bottom: 5px;
 }
 
 .incident-item:last-child {
@@ -366,15 +400,23 @@ h1 {
 }
 
 .incident-service {
-    font-weight: 500;
-    color: #ef4444;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.incident-separator {
+    font-size: 12px;
+    color: #fff;
+    flex-shrink: 0;
 }
 
 .incident-details {
-    font-size: 13px;
-    color: #666;
-    text-align: right;
-    max-width: 60%;
+    font-size: 10px;
+    font-weight: 400;
+    color: #fff;
+    flex: 1;
 }
 
 .no-incidents {
@@ -414,6 +456,37 @@ footer {
     margin: 24px 0 0 0;
 }
 
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .uptime-tooltip {
+        min-width: 200px;
+        max-width: calc(100vw - 40px);
+        padding: 10px 12px;
+    }
 
+    /* On mobile, adjust tooltip positioning for first items */
+    .uptime-day:nth-child(-n + 10) .uptime-tooltip {
+        left: 0;
+        transform: translateX(0);
+    }
 
+    .uptime-day:nth-child(-n + 10) .uptime-tooltip::before,
+    .uptime-day:nth-child(-n + 10) .uptime-tooltip::after {
+        left: 15px;
+        transform: translateX(0);
+    }
 
+    /* On mobile, adjust tooltip positioning for last items */
+    .uptime-day:nth-last-child(-n + 10) .uptime-tooltip {
+        left: auto;
+        right: 0;
+        transform: translateX(0);
+    }
+
+    .uptime-day:nth-last-child(-n + 10) .uptime-tooltip::before,
+    .uptime-day:nth-last-child(-n + 10) .uptime-tooltip::after {
+        left: auto;
+        right: 15px;
+        transform: translateX(0);
+    }
+}

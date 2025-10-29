@@ -1,57 +1,98 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Honmaku - Server Status</title>
-    <meta name="description" content="Real-time status monitoring for our services">
-    <link rel="stylesheet" href="src/css/style.css">
-</head>
-<body>
-    <div class="container">
-        <header>
-            <div class="header-top">
-                <a href="https://honmaku.vercel.app" class="home-link" title="Back to Home">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                    </svg>
-                </a>
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>Honmaku - Server Status</title>
+        <meta
+            name="description"
+            content="Real-time status monitoring for our services"
+        />
+        <link rel="stylesheet" href="src/css/style.css" />
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <div class="header-top">
+                    <a
+                        href="https://honmaku.vercel.app"
+                        class="home-link"
+                        title="Back to Home"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path
+                                d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                            ></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    </a>
+                    <a
+                        href="https://github.com/lhmchyd/HonMaku-Status"
+                        class="repo-link"
+                        title="View Repository"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <span>Built with 💖 by HonMāku</span>
+                    </a>
+                </div>
+            </header>
+            <div class="status-badge" id="overall-badge">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>All Systems Operational</span>
             </div>
-        </header>
-        <div class="status-badge" id="overall-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>All Systems Operational</span>
-        </div>
-        <div class="metadata">
-            <div class="metadata-item">
-                <span class="metadata-label">Last Updated:</span>
-                <span class="metadata-value" id="last-updated">—</span>
+            <div class="metadata">
+                <div class="metadata-item">
+                    <span class="metadata-label">Last Updated:</span>
+                    <span class="metadata-value" id="last-updated">—</span>
+                </div>
             </div>
-        </div>
-        
-        <div class="services" id="services-container">
-            <div class="loading">
-                <div class="spinner"></div>
-            </div>
-        </div>
-        
-        <div class="history-section">
-            <h2>Past Incidents</h2>
-            <div id="history-container">
-                <div class="loading" style="padding: 40px 20px;">
+
+            <div class="services" id="services-container">
+                <div class="loading">
                     <div class="spinner"></div>
                 </div>
             </div>
-        </div>
-        
-        <footer>
-            <p>Automatically refreshed based on GitHub Actions schedule</p>
-        </footer>
-    </div>
 
-    <script src="src/js/script.js"></script>
-</body>
+            <div class="history-section">
+                <h2>Past Incidents</h2>
+                <div id="history-container">
+                    <div class="loading" style="padding: 40px 20px">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <footer>
+                <p>Automatically refreshed based on GitHub Actions schedule</p>
+            </footer>
+        </div>
+
+        <script src="src/js/script.js"></script>
+    </body>
 </html>
