@@ -1,6 +1,15 @@
 [
   {
     "date": "2025-10-29",
+    "timestamp": 1761708844,
+    "service": "https://graphql.anilist.co",
+    "name": "AniList API",
+    "status": 404,
+    "error": "Not Found",
+    "responseTime": 461
+  },
+  {
+    "date": "2025-10-29",
     "timestamp": 1761699520,
     "service": "https://anilist.co",
     "name": "AniList",
