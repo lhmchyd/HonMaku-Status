@@ -1,5 +1,14 @@
 [
   {
+    "date": "2025-10-29",
+    "timestamp": 1761699520,
+    "service": "https://anilist.co",
+    "name": "AniList",
+    "status": 404,
+    "error": "Not Found",
+    "responseTime": 114
+  },
+  {
     "timestamp": 1761580800,
     "service": "https://api.example.com",
     "name": "API Server",
