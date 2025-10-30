@@ -382,6 +382,23 @@ h1 {
     margin: 0;
 }
 
+.incident-date {
+    margin-bottom: 24px;
+}
+
+.incident-date-header {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.incident-date-header h3 {
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    margin: 0;
+}
+
 .incident-list {
     display: flex;
     flex-direction: column;
@@ -419,11 +436,119 @@ h1 {
     flex: 1;
 }
 
+/* Specific styles for history page */
+.history-page .incident-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.history-page .incident-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: flex-start;
+}
+
+.history-page .incident-item-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.show-more-container {
+    margin: 10px 0;
+    text-align: center;
+}
+
+.show-more-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.show-more-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.history-page .incident-item:last-child {
+    border-bottom: none;
+}
+
+.history-page .incident-service {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.history-page .incident-separator {
+    font-size: 12px;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.history-page .incident-details {
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.history-page .incident-date {
+    font-size: 10px;
+    color: #666;
+    margin-top: 6px;
+}
+
+.no-incidents-today {
+    color: #aaa; /* Muted white/light gray color, not dark */
+    font-style: normal; /* No italic */
+}
+
 .no-incidents {
     font-size: 14px;
     color: #666;
     text-align: center;
     padding: 20px 0;
+}
+
+.history-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.history-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.history-link-text-only {
+    background: none !important;
+    border: none !important;
+    padding: 5px 9px !important;
+    font-size: 10px !important;
+    font-weight: 500;
+}
+
+.history-link-text-only:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+    border-radius: 5px;
 }
 
 .loading {
@@ -449,15 +574,51 @@ h1 {
 }
 
 footer {
-    text-align: center;
-    padding: 32px 20px 40px 20px;
     color: #666;
     font-size: 12px;
-    margin: 24px 0 0 0;
+    margin: 50px 0 50px 0;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.history-nav {
+    margin: 0;
+}
+
+footer p {
+    margin: 0;
+    text-align: center;
+    color: #666;
+    font-size: 12px;
+    width: 100%;
+}
+
+.incident-month-header {
+    font-size: 20px;
+    font-weight: 500;
+    margin: 24px 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
 }
 
 /* Mobile optimizations */
 @media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .footer-content p {
+        display: none; /* Hide the refresh text on mobile to maintain consistency */
+    }
+
     .uptime-tooltip {
         min-width: 200px;
         max-width: calc(100vw - 40px);

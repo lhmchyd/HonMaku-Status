@@ -393,66 +393,110 @@ async function loadStatus() {
     const historyContainer = document.getElementById("history-container");
     historyContainer.innerHTML = "";
 
-    if (incidents.length > 0) {
-      // Group incidents by date using timestamps
-      const incidentsByDate = {};
-      const secondsInDay = 24 * 60 * 60;
+    // Group incidents by date using timestamps
+    const incidentsByDate = {};
+    const secondsInDay = 24 * 60 * 60;
 
-      incidents.forEach((incident) => {
-        // Calculate the date from the timestamp
-        const incidentDayStart =
-          Math.floor(incident.timestamp / secondsInDay) * secondsInDay;
+    incidents.forEach((incident) => {
+      // Calculate the date from the timestamp
+      const incidentDayStart =
+        Math.floor(incident.timestamp / secondsInDay) * secondsInDay;
 
-        if (!incidentsByDate[incidentDayStart]) {
-          incidentsByDate[incidentDayStart] = {
-            dayStart: incidentDayStart,
-            dateObj: new Date(incidentDayStart * 1000),
-            incidents: [],
-          };
+      if (!incidentsByDate[incidentDayStart]) {
+        incidentsByDate[incidentDayStart] = {
+          dayStart: incidentDayStart,
+          dateObj: new Date(incidentDayStart * 1000),
+          incidents: [],
+        };
+      }
+
+      incidentsByDate[incidentDayStart].incidents.push(incident);
+    });
+
+    // Create array of the last 60 days with their status
+    const now = Date.now() / 1000; // Current Unix timestamp
+    const last60Days = [];
+    
+    for (let i = 0; i < 60; i++) {
+      const dayStartTimestamp = Math.floor((now - i * 24 * 60 * 60) / (24 * 60 * 60)) * (24 * 60 * 60);
+      const dayEntry = history.find(
+        (entry) =>
+          Math.floor(entry.timestamp / secondsInDay) ===
+          Math.floor(dayStartTimestamp / secondsInDay)
+      );
+      
+      last60Days.push({
+        dayStart: dayStartTimestamp,
+        status: dayEntry ? dayEntry.status : null,
+        incidents: incidentsByDate[dayStartTimestamp] ? incidentsByDate[dayStartTimestamp].incidents : []
+      });
+    }
+
+    // Filter to keep only days with incidents or good status days (last 30 days to prevent clutter)
+    const relevantDays = last60Days.filter((day, index) => {
+      // Include days with incidents or days with 'good' status (but limit to last 30 days to prevent clutter)
+      return day.incidents.length > 0 || (day.status === 'good' && index < 30);
+    });
+
+    if (relevantDays.length > 0) {
+      // Sort by date (most recent first)
+      relevantDays.sort((a, b) => b.dayStart - a.dayStart);
+
+      // Limit to only the first 15 entries for the main page
+      const limitedDays = relevantDays.slice(0, 15);
+
+      // Display each day
+      limitedDays.forEach((day) => {
+        const dayElement = document.createElement("div");
+        dayElement.className = "incident-date";
+
+        // Format the date for display
+        const displayDate = formatDateLong(day.dayStart);
+
+        if (day.incidents.length > 0) {
+          // Display incidents for this day
+          dayElement.innerHTML = `
+                      <div class="incident-date-header">
+                          <h3>${displayDate}</h3>
+                      </div>
+                      <div class="incident-list">
+                          ${day.incidents
+                            .map(
+                              (incident) => `
+                              <div class="incident-item">
+                                  <div class="incident-service">${incident.name || incident.service}</div>
+                                  <span class="incident-separator">-</span>
+                                  <div class="incident-details">${incident.error}</div>
+                              </div>
+                          `,
+                            )
+                            .join("")}
+                      </div>
+                  `;
+        } else if (day.status === 'good') {
+          // Determine if this is today's date to show appropriate message
+          const today = new Date();
+          const todayStartTimestamp = Math.floor(today.getTime() / 1000 / (24 * 60 * 60)) * (24 * 60 * 60);
+          const isToday = day.dayStart === todayStartTimestamp;
+          
+          // Display appropriate message based on whether it's today or a past day
+          const message = isToday ? "No incidents reported today." : "No incidents reported.";
+          
+          // Display message for days with good status
+          dayElement.innerHTML = `
+                      <div class="incident-date-header">
+                          <h3>${displayDate}</h3>
+                      </div>
+                      <div class="incident-list">
+                          <div class="incident-item">
+                              <div class="incident-details no-incidents-today">${message}</div>
+                          </div>
+                      </div>
+                  `;
         }
 
-        incidentsByDate[incidentDayStart].incidents.push(incident);
+        historyContainer.appendChild(dayElement);
       });
-
-      // Convert to array and sort by date (most recent first)
-      const sortedIncidents = Object.keys(incidentsByDate)
-        .map((dayStartKey) => incidentsByDate[dayStartKey])
-        .sort((a, b) => b.dayStart - a.dayStart); // Sort by timestamp, most recent first
-
-      if (sortedIncidents.length > 0) {
-        // Display each incident date
-        sortedIncidents.forEach((incidentGroup) => {
-          const incidentDate = document.createElement("div");
-          incidentDate.className = "incident-date";
-
-          // Format the date for display
-          const displayDate = formatDateLong(incidentGroup.dayStart);
-
-          incidentDate.innerHTML = `
-                        <div class="incident-date-header">
-                            <h3>${displayDate}</h3>
-                        </div>
-                        <div class="incident-list">
-                            ${incidentGroup.incidents
-                              .map(
-                                (incident) => `
-                                <div class="incident-item">
-                                    <div class="incident-service">${incident.name || incident.service}</div>
-                                    <span class="incident-separator">-</span>
-                                    <div class="incident-details">${incident.error}</div>
-                                </div>
-                            `,
-                              )
-                              .join("")}
-                        </div>
-                    `;
-
-          historyContainer.appendChild(incidentDate);
-        });
-      } else {
-        historyContainer.innerHTML =
-          '<div class="no-incidents">No incidents reported.</div>';
-      }
     } else {
       historyContainer.innerHTML =
         '<div class="no-incidents">No incidents reported.</div>';
@@ -564,4 +608,7 @@ async function initializeApp() {
   loadStatus();
 }
 
-initializeApp();
+// Only initialize on the main page (index.html), not on history page
+if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+  initializeApp();
+}
