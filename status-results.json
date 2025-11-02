@@ -1,22 +1,22 @@
 {
-  "timestamp": 1762118977,
+  "timestamp": 1762119398,
   "results": [
     {
       "url": "https://anilist.co",
       "status": 200,
       "statusText": "OK",
-      "responseTime": 179,
+      "responseTime": 108,
       "error": null,
-      "timestamp": 1762118976,
+      "timestamp": 1762119398,
       "name": "AniList"
     },
     {
       "url": "https://giscus.app",
-      "status": null,
-      "statusText": "Error",
-      "responseTime": 109,
-      "error": "Client network socket disconnected before secure TLS connection was established",
-      "timestamp": 1762118977,
+      "status": 200,
+      "statusText": "OK",
+      "responseTime": 163,
+      "error": null,
+      "timestamp": 1762119398,
       "name": "Giscus"
     }
   ]
