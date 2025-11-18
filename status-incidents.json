@@ -1,5 +1,14 @@
 [
   {
+    "date": "2025-11-18",
+    "timestamp": 1763466317,
+    "service": "https://anilist.co",
+    "name": "AniList",
+    "status": 500,
+    "error": "Internal Server Error",
+    "responseTime": 70
+  },
+  {
     "date": "2025-11-09",
     "timestamp": 1762730724,
     "service": "https://giscus.app",
