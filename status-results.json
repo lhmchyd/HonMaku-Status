@@ -1,22 +1,22 @@
 {
-  "timestamp": 1763907233,
+  "timestamp": 1763908205,
   "results": [
     {
       "url": "https://anilist.co",
       "status": 200,
       "statusText": "OK",
-      "responseTime": 121,
+      "responseTime": 115,
       "error": null,
-      "timestamp": 1763907233,
+      "timestamp": 1763908205,
       "name": "AniList"
     },
     {
       "url": "https://giscus.app",
       "status": 200,
       "statusText": "OK",
-      "responseTime": 99,
+      "responseTime": 46,
       "error": null,
-      "timestamp": 1763907233,
+      "timestamp": 1763908205,
       "name": "Giscus"
     }
   ]
