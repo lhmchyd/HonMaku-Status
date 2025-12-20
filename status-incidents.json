@@ -1,5 +1,14 @@
 [
   {
+    "date": "2025-12-20",
+    "timestamp": 1766250464,
+    "service": "https://giscus.app",
+    "name": "Giscus",
+    "status": null,
+    "error": "Client network socket disconnected before secure TLS connection was established",
+    "responseTime": 121
+  },
+  {
     "date": "2025-12-19",
     "timestamp": 1766144875,
     "service": "https://anilist.co",
