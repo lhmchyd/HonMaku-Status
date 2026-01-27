@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-01-27",
+    "timestamp": 1769526080,
+    "service": "https://anilist.co",
+    "name": "AniList",
+    "status": null,
+    "error": "Request timed out",
+    "responseTime": 10028
+  },
+  {
     "date": "2026-01-03",
     "timestamp": 1767483117,
     "service": "https://giscus.app",
