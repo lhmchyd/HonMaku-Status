@@ -1,5 +1,9 @@
 [
   {
+    "timestamp": 1782518400,
+    "status": "good"
+  },
+  {
     "timestamp": 1782432000,
     "status": "good"
   },
@@ -234,9 +238,5 @@
   {
     "timestamp": 1777420800,
     "status": "good"
-  },
-  {
-    "timestamp": 1777334400,
-    "status": "error"
   }
 ]
