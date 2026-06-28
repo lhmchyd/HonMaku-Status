@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-06-28",
+    "timestamp": 1782605539,
+    "service": "https://anilist.co",
+    "name": "AniList",
+    "status": 403,
+    "error": "Forbidden",
+    "responseTime": 49
+  },
+  {
     "date": "2026-06-27",
     "timestamp": 1782586187,
     "service": "https://anilist.co",
